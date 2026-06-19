@@ -440,7 +440,7 @@ export default function SolutionForm() {
         fd.append("is_premium", isPremium ? "1" : "0");
         if (editingId) fd.append("update_id", editingId.toString());
 
-        const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
         const result = await res.json();
         if (!res.ok || !result.success) throw new Error(result.error || "Upload failed");
 
