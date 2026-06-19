@@ -22,7 +22,8 @@ export async function addSolution(
   solution_type,
   pdf_url,
   description,
-  is_premium
+  is_premium,
+  price
 ) {
   const [result] = await db.query(
     `
@@ -33,9 +34,10 @@ export async function addSolution(
       solution_type,
       pdf_url,
       description,
-      is_premium
+      is_premium,
+      price
     )
-    VALUES (?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
     [
       subject_id,
@@ -44,13 +46,14 @@ export async function addSolution(
       pdf_url,
       description,
       is_premium,
+      price,
     ]
   );
 
   return result;
 }
-
 // Update Solution
+
 export async function updateSolution(
   id,
   subject_id,
@@ -58,7 +61,8 @@ export async function updateSolution(
   solution_type,
   pdf_url,
   description,
-  is_premium
+  is_premium,
+  price
 ) {
   const [result] = await db.query(
     `
@@ -69,7 +73,8 @@ export async function updateSolution(
       solution_type = ?,
       pdf_url = ?,
       description = ?,
-      is_premium = ?
+      is_premium = ?,
+      price = ?
     WHERE id = ?
     `,
     [
@@ -79,12 +84,17 @@ export async function updateSolution(
       pdf_url,
       description,
       is_premium,
+      price,
       id,
     ]
   );
 
   return result;
 }
+
+
+
+
 
 // Delete Solution
 export async function deleteSolution(id) {
