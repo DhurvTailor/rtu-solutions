@@ -129,3 +129,23 @@ export async function getSolutionsBySubject(subjectId) {
 
   return rows;
 }
+
+
+
+
+// Get Single Solution by ID
+export async function getSolutionById(id) {
+  const [rows] = await db.query(
+    `
+    SELECT
+      solutions.*,
+      subjects.name AS subject_name
+    FROM solutions
+    JOIN subjects
+      ON solutions.subject_id = subjects.id
+    WHERE solutions.id = ?
+    `,
+    [id]
+  );
+  return rows[0];
+}

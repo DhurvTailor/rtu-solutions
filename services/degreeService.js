@@ -9,6 +9,7 @@ export async function getDegrees() {
   return rows;
 }
 
+
 // Add Degree
 export async function addDegree(name) {
   const [result] = await db.query(
