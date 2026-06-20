@@ -1,172 +1,4 @@
 
-// // components/Navbar.jsx
-
-// "use client";
-
-// import Link from "next/link";
-// import Image from "next/image";
-// import { FaSearch } from "react-icons/fa";
-// import  hero from "../../public/hero.webp";
-// import { useSession, signOut } from "next-auth/react";
-// export default function Navbar() {
-
-// const { data: session } = useSession();
-
-// console.log("SESSION =", session);
-//   return (
-//     <header className="sticky top-0 z-50 bg-[#071A3D]/95 backdrop-blur-md border-b border-orange-500/20">
-
-//       <div className="max-w-7xl mx-auto px-5">
-
-//         <div className="flex items-center justify-between h-20">
-
-//           {/* Logo */}
-
-//           <Link
-//             href="/"
-//             className="flex items-center gap-3"
-//           >
-//             <Image
-//               src="/logo.jpg"
-//               alt="RTU Solutions"
-//               width={50}
-//               height={50}
-//               className="rounded-full"
-//             />
-
-//             <div>
-
-//               <h2 className="text-white font-bold text-xl">
-//                 RTU{" "}
-//                 <span className="text-orange-500">
-//                   Solutions
-//                 </span>
-//               </h2>
-
-//               <p className="text-xs text-gray-300">
-//                 Notes • PYQ • Important Questions • Videos
-//               </p>
-
-//             </div>
-
-//           </Link>
-
-//           {/* Desktop Menu */}
-
-//           <nav className="hidden lg:flex items-center gap-8 text-white font-medium">
-
-//             <Link
-//               href="/"
-//               className="hover:text-orange-500 transition"
-//             >
-//               Home
-//             </Link>
-
-//             <Link
-//               href="/rtu-solutions"
-//               className="hover:text-orange-500 transition"
-//             >
-//               RTU Solutions
-//             </Link>
-
-//             <Link
-//               href="/tools"
-//               className="hover:text-orange-500 transition"
-//             >
-//               Tools
-//             </Link>
-
-//             <Link
-//               href="/blog"
-//               className="hover:text-orange-500 transition"
-//             >
-//               Blog
-//             </Link>
-
-//             <Link
-//               href="/about"
-//               className="hover:text-orange-500 transition"
-//             >
-//               About
-//             </Link>
-
-//             <Link
-//               href="/contact"
-//               className="hover:text-orange-500 transition"
-//             >
-//               Contact
-//             </Link>
-
-//           </nav>
-
-//           {/* Right Side */}
-
-//         <div className="flex items-center gap-4">
-
-//   <button className="text-white text-lg hover:text-orange-500 transition">
-//     <FaSearch />
-//   </button>
-
-//   {!session ? (
-//     <Link
-//       href="/login"
-//       className="
-//       border
-//       border-orange-500
-//       px-5
-//       py-2
-//       rounded-lg
-//       text-white
-//       hover:bg-orange-500
-//       transition
-//       "
-//     >
-//       Login
-//     </Link>
-//   ) : (
-//     <div className="flex items-center gap-3">
-
-//       <Image
-//         src={session.user.image}
-//         alt={session.user.name}
-//         width={40}
-//         height={40}
-//         className="rounded-full border-2 border-orange-500"
-//       />
-
-//       <span className="text-white font-medium hidden md:block">
-//         {session.user.name}
-//       </span>
-
-//       <button
-//         onClick={() => signOut()}
-//         className="
-//         bg-red-500
-//         px-4
-//         py-2
-//         rounded-lg
-//         text-white
-//         hover:bg-red-600
-//         transition
-//         "
-//       >
-//         Logout
-//       </button>
-
-//     </div>
-//   )}
-
-// </div>
-
-//         </div>
-
-//       </div>
-
-//     </header>
-//   );
-// } 
-
-
 
 
 "use client";
@@ -180,7 +12,7 @@ import ProfileDropdown from "./ProfileDropdown";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/rtu-solutions", label: "RTU Solutions" },
-  { href: "/tools", label: "Tools" },
+  { href: "/cgpa", label: "Tools" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
@@ -191,7 +23,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#071A3D]/95 backdrop-blur-md border-b border-orange-500/20">
+    <header className="sticky top-0 z-50 bg-[#ff6900]/95 backdrop-blur-md border-b border-orange-500/20">
       <div className="max-w-7xl mx-auto px-5">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}

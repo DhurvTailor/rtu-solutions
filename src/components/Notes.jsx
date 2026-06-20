@@ -347,14 +347,16 @@ export default function Notes() {
                       <span className="text-xs uppercase font-medium text-gray-400">
                         {sol.solution_type}
                       </span>
-                      <a 
-                         href={`/api/download?id=${sol.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 bg-[#E8700A] active:scale-95 hover:bg-[#cf6209] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all"
-                      >
-                        <FiDownload size={14} /> Download
-                      </a>  
+                     <td className="px-6 py-4 text-right">
+  <a 
+    href={`/api/download?id=${sol.id}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-1.5 bg-[#E8700A] hover:bg-[#cf6209] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+  >
+    <FiDownload size={14} /> Download
+  </a>
+</td>
                     </div>
                   </div>
                 ))}
