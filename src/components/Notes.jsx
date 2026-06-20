@@ -348,7 +348,7 @@ export default function Notes() {
                         {sol.solution_type}
                       </span>
                       <a 
-                        href={sol.pdf_url}
+                         href={`/api/download?id=${solution.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 bg-[#E8700A] active:scale-95 hover:bg-[#cf6209] text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-all"

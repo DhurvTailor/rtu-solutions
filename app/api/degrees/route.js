@@ -5,35 +5,23 @@ import {
   deleteDegree,
 } from "@/services/degreeService";
 
- // GET
-// export async function GET() {
-//   try {
-//     const degrees = await getDegrees();
-
-//     return Response.json(degrees);
-//   } catch (error) {
-//     console.log(error);
-
-//     return Response.json(
-//       { message: "Failed to fetch degrees" },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// GET /api/degrees
+ //GET
 export async function GET() {
   try {
-    const data = await getDegrees();
-    return NextResponse.json({ success: true, data });
+    const degrees = await getDegrees();
+
+    return Response.json(degrees);
   } catch (error) {
-    console.error("GET /api/degrees error:", error);
-    return NextResponse.json(
-      { success: false, message: error.message },
+    console.log(error);
+
+    return Response.json(
+      { message: "Failed to fetch degrees" },
       { status: 500 }
     );
   }
 }
+
+
  
 
 
