@@ -161,21 +161,21 @@ import db from "@/lib/db";
 // -> semesters -> subjects) join kar di hai.
 export async function getSolutions() {
   const [rows] = await db.query(`
-    SELECT
-      solutions.*,
-      subjects.name              AS subject_name,
-      subjects.semester_id       AS semester_id,
-      semesters.semester_number  AS semester_number,
-      semesters.branch_id        AS branch_id,
-      branches.name              AS branch_name,
-      branches.degree_id         AS degree_id,
-      degrees.name               AS degree_name
-    FROM solutions
-    JOIN subjects  ON solutions.subject_id = subjects.id
-    JOIN semesters ON subjects.semester_id = semesters.id
-    JOIN branches  ON semesters.branch_id  = branches.id
-    JOIN degrees   ON branches.degree_id   = degrees.id
-    ORDER BY solutions.id DESC
+   SELECT
+  solutions.*,
+  subjects.name AS subject_name,
+  subjects.semester_id AS semester_id,
+  semesters.semester_number AS semester_number,
+  semesters.branch_id AS branch_id,
+  branch.name AS branch_name,
+  branch.degree_id AS degree_id,
+  degrees.name AS degree_name
+FROM solutions
+JOIN subjects ON solutions.subject_id = subjects.id
+JOIN semesters ON subjects.semester_id = semesters.id
+JOIN branch ON semesters.branch_id = branch.id
+JOIN degrees ON branch.degree_id = degrees.id
+ORDER BY solutions.id DESC
   `);
   return rows;
 }
