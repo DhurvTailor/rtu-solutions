@@ -118,7 +118,12 @@ const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME;
 function getContainerClient() {
   if (!connectionString) {
     throw new Error(
-      "AZURE_STORAGE_CONNECTION_STRING missing hai env variables mein"
+      "AZURE_STORAGE_CONNECTION_STRING missing hai Vercel env variables mein"
+    );
+  }
+  if (!connectionString.includes("AccountName=") || !connectionString.includes("AccountKey=")) {
+    throw new Error(
+      "AZURE_STORAGE_CONNECTION_STRING ka format galat hai — AccountName= aur AccountKey= dono honi chahiye. Azure Portal se connection string dobara copy karo."
     );
   }
   if (!containerName) {
