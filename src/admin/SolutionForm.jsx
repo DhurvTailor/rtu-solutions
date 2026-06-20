@@ -911,7 +911,7 @@ export default function SolutionForm() {
               placeholder="Description (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full min-h-[80px] border rounded-lg p-3 text-sm resize-none"
+              className="w-full min-h-20 border rounded-lg p-3 text-sm resize-none"
             />
 
             <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -995,13 +995,13 @@ export default function SolutionForm() {
                 ) : solutions.map((s, i) => (
                   <TableRow key={s.id} className={editingId === s.id ? "bg-orange-50" : ""}>
                     <TableCell>{i + 1}</TableCell>
-                    <TableCell className="max-w-[200px]">
+                    <TableCell className="max-w-50">
                       <p className="truncate font-medium">{s.subject_name}</p>
                       <p className="text-xs text-gray-400 truncate">
                         {s.branch_name} · Sem {s.semester_number}
                       </p>
                     </TableCell>
-                    <TableCell className="max-w-[180px] truncate">{s.title}</TableCell>
+                    <TableCell className="max-w-45 truncate">{s.title}</TableCell>
                     <TableCell>
                       <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700">
                         {s.solution_type}
