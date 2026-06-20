@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
     }
 
     const solution = await getSolutionById(id);
-
     if (!solution) {
       return NextResponse.json(
         { error: "Solution nahi mila" },
@@ -30,16 +29,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // NOTE: Yahan pe solution.pdf_url woh blobName hai jo upload ke time
-    // Azure ne return kiya tha (poora URL nahi), isliye seedha
-    // getSecureDownloadURL ko pass kar rahe hain.
-
+    // NOTE: solution.pdf_url yahan blobName hai (poora URL nahi),
+    // isliye seedha getSecureDownloadURL ko pass kar rahe hain.
+    // Dusra argument filename hai — isse browser file ko save karte
+    // waqt solution ka title use karega, blobName ka random naam nahi.
     // TODO (baad mein add karna): Agar solution.is_premium === 1 hai,
     // to yahan check karo ki logged-in user ne purchases table mein
     // is solution_id ke against payment_status = 'paid' kiya hai ya nahi.
     // Abhi ke liye sab downloads free hain.
-
-    const sasUrl = await getSecureDownloadURL(solution.pdf_url);
+    const downloadFileName = `${solution.title || "solution"}.pdf`;
+    const sasUrl = await getSecureDownloadURL(solution.pdf_url, downloadFileName);
 
     return NextResponse.redirect(sasUrl);
   } catch (error) {
