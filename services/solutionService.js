@@ -1,17 +1,31 @@
+
+
 // import db from "@/lib/db";
 
 // // Get All Solutions
+// // FIX: Pehle sirf "subjects" se join hota tha, isliye branch_name,
+// // semester_number, degree_id, branch_id kabhi response mein aate hi
+// // nahi the. SolutionForm ki admin table aur Edit-prefill dono isi
+// // data par depend karte hain — ab poori hierarchy (degrees -> branches
+// // -> semesters -> subjects) join kar di hai.
 // export async function getSolutions() {
 //   const [rows] = await db.query(`
-//     SELECT
-//       solutions.*,
-//       subjects.name AS subject_name
-//     FROM solutions
-//     JOIN subjects
-//     ON solutions.subject_id = subjects.id
-//     ORDER BY solutions.id DESC
+//    SELECT
+//   solutions.*,
+//   subjects.name AS subject_name,
+//   subjects.semester_id AS semester_id,
+//   semesters.semester_number AS semester_number,
+//   semesters.branch_id AS branch_id,
+//   branch.name AS branch_name,
+//   branch.degree_id AS degree_id,
+//   degrees.name AS degree_name
+// FROM solutions
+// JOIN subjects ON solutions.subject_id = subjects.id
+// JOIN semesters ON subjects.semester_id = semesters.id
+// JOIN branch ON semesters.branch_id = branch.id
+// JOIN degrees ON branch.degree_id = degrees.id
+// ORDER BY solutions.id DESC
 //   `);
-
 //   return rows;
 // }
 
@@ -49,11 +63,10 @@
 //       price,
 //     ]
 //   );
-
 //   return result;
 // }
-// // Update Solution
 
+// // Update Solution
 // export async function updateSolution(
 //   id,
 //   subject_id,
@@ -88,13 +101,8 @@
 //       id,
 //     ]
 //   );
-
 //   return result;
 // }
-
-
-
-
 
 // // Delete Solution
 // export async function deleteSolution(id) {
@@ -102,15 +110,8 @@
 //     "DELETE FROM solutions WHERE id = ?",
 //     [id]
 //   );
-
 //   return result;
 // }
-
-
-
-
-
-
 
 // export async function getSolutionsBySubject(subjectId) {
 //   const [rows] = await db.query(
@@ -126,12 +127,8 @@
 //     `,
 //     [subjectId]
 //   );
-
 //   return rows;
 // }
-
-
-
 
 // // Get Single Solution by ID
 // export async function getSolutionById(id) {
@@ -151,31 +148,29 @@
 // }
 
 
+
+
 import db from "@/lib/db";
 
 // Get All Solutions
-// FIX: Pehle sirf "subjects" se join hota tha, isliye branch_name,
-// semester_number, degree_id, branch_id kabhi response mein aate hi
-// nahi the. SolutionForm ki admin table aur Edit-prefill dono isi
-// data par depend karte hain — ab poori hierarchy (degrees -> branches
-// -> semesters -> subjects) join kar di hai.
+// FIX: "branches" → "branch" (tumhare DB mein table ka naam "branch" hai)
 export async function getSolutions() {
   const [rows] = await db.query(`
-   SELECT
-  solutions.*,
-  subjects.name AS subject_name,
-  subjects.semester_id AS semester_id,
-  semesters.semester_number AS semester_number,
-  semesters.branch_id AS branch_id,
-  branch.name AS branch_name,
-  branch.degree_id AS degree_id,
-  degrees.name AS degree_name
-FROM solutions
-JOIN subjects ON solutions.subject_id = subjects.id
-JOIN semesters ON subjects.semester_id = semesters.id
-JOIN branch ON semesters.branch_id = branch.id
-JOIN degrees ON branch.degree_id = degrees.id
-ORDER BY solutions.id DESC
+    SELECT
+      solutions.*,
+      subjects.name              AS subject_name,
+      subjects.semester_id       AS semester_id,
+      semesters.semester_number  AS semester_number,
+      semesters.branch_id        AS branch_id,
+      branch.name                AS branch_name,
+      branch.degree_id           AS degree_id,
+      degrees.name               AS degree_name
+    FROM solutions
+    JOIN subjects  ON solutions.subject_id = subjects.id
+    JOIN semesters ON subjects.semester_id = semesters.id
+    JOIN branch    ON semesters.branch_id  = branch.id
+    JOIN degrees   ON branch.degree_id     = degrees.id
+    ORDER BY solutions.id DESC
   `);
   return rows;
 }
@@ -264,6 +259,7 @@ export async function deleteSolution(id) {
   return result;
 }
 
+// Get Solutions by Subject
 export async function getSolutionsBySubject(subjectId) {
   const [rows] = await db.query(
     `
