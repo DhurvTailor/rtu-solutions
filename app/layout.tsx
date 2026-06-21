@@ -6,6 +6,7 @@ import AuthProvider from "@/src/components/AuthProvider";
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+<script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 
 export const metadata: Metadata = {
   title: "RTU Solutions",
@@ -21,5 +22,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   </AuthProvider>
 </body>
     </html>
+    
   );
 }

@@ -156,7 +156,7 @@ export default function AdminSidebar() {
 
   return (
     <aside
-      className={`h-screen sticky top-0 bg-gradient-to-b from-[#071A3D] via-[#0d234d] to-[#142647]
+      className={`h-screen sticky top-0 bg-linear-to-b from-[#071A3D] via-[#0d234d] to-[#142647]
       border-r border-white/10 shadow-2xl transition-all duration-300
       ${collapsed ? "w-20" : "w-72"}`}
     >
