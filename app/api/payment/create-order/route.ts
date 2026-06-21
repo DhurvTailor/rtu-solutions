@@ -5,10 +5,16 @@ import Razorpay from "razorpay";
 import { getSolutionById } from "@/services/solutionService";
 import { createPendingPurchase } from "@/services/purchaseService";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+function getRazorpayClient() {
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    throw new Error(
+      "RAZORPAY_KEY_ID ya RAZORPAY_KEY_SECRET .env mein missing hai."
+    );
+  }
+  return new Razorpay({ key_id, key_secret });
+}
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -34,7 +40,7 @@ export async function POST(req: NextRequest) {
     const priceRupees = parseFloat(solution.price);
     const amountInPaise = Math.round(priceRupees * 100);
 
-    const razorpayOrder = await razorpay.orders.create({
+    const razorpayOrder = await getRazorpayClient().orders.create({
       amount: amountInPaise,
       currency: "INR",
       receipt: `sol_${solution_id}_${Date.now()}`,
