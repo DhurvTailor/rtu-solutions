@@ -593,7 +593,7 @@ export default function Notes() {
   // ─── See PDF Button — preview page ke liye, page khulte hi 2 page dikhega ──
   function SeePdfButton({ sol }) {
     return (
-      
+      <a
         href={`/solutions/${sol.id}`}
         className="inline-flex items-center gap-1.5 border border-[#071A3D]/20 text-[#071A3D] hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
       >
@@ -606,7 +606,7 @@ export default function Notes() {
   function DownloadButton({ sol }) {
     if (sol.is_premium) {
       return (
-        
+        <a
           href={`/checkout?solution_id=${sol.id}`}
           className="inline-flex items-center gap-1.5 bg-[#071A3D] hover:bg-[#0d2a5e] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
         >
@@ -616,7 +616,7 @@ export default function Notes() {
       );
     }
     return (
-      
+      <a
         href={`/api/download?id=${sol.id}`}
         className="inline-flex items-center gap-1.5 bg-[#E8700A] hover:bg-[#cf6209] text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
       >
