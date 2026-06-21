@@ -428,7 +428,7 @@ export default function Notes() {
                           <StatusBadge sol={sol} />
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex items-center justify-end gap-3">
                             <SeePdfButton sol={sol} />
                             <DownloadButton sol={sol} />
                           </div>
