@@ -99,7 +99,7 @@ export default function BlogPage() {
 
       {/* FEATURED */}
       <section className="max-w-7xl mx-auto px-6 py-14">
-        <div className="bg-gradient-to-r from-[#071A3D] to-[#142647] rounded-3xl p-10 text-white">
+        <div className="bg-linear-to-r from-[#071A3D] to-[#142647] rounded-3xl p-10 text-white">
           <span className="text-[#E8700A] font-semibold">
             🔥 Featured Article
           </span>
@@ -163,7 +163,7 @@ export default function BlogPage() {
               key={index}
               className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition"
             >
-              <div className="h-52 bg-gradient-to-r from-[#071A3D] to-[#E8700A]" />
+              <div className="h-52 bg-linear-to-r from-[#071A3D] to-[#E8700A]" />
 
               <div className="p-6">
                 <span className="text-sm text-[#E8700A] font-semibold">
