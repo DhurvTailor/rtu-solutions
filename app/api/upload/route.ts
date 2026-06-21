@@ -1,4 +1,69 @@
 
+// import { NextRequest, NextResponse } from "next/server";
+// import { getServerSession } from "next-auth";
+// import { authOptions } from "@/lib/authOptions";
+// import { addSolution, updateSolution } from "@/services/solutionService";
+
+// export async function POST(req: NextRequest) {
+//   const session = await getServerSession(authOptions);
+//   if (!session || (session.user as any).role !== "admin") {
+//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+//   }
+//   try {
+//     const body = await req.json();
+//     const {
+//       blobName,
+//       subject_id: subjectId,
+//       solution_type: solutionType,
+//       price,
+//       title,
+//       description = "",
+//       is_premium: isPremium = "0",
+//       update_id: updateId = null,
+//     } = body;
+//     if (!blobName || !subjectId || !solutionType || !price || !title) {
+//       return NextResponse.json(
+//         { error: "Subject, Title, Type, Price aur PDF (blobName) sab chahiye" },
+//         { status: 400 }
+//       );
+//     }
+//     if (updateId) {
+//       await updateSolution(
+//         parseInt(updateId),
+//         subjectId,
+//         title,
+//         solutionType,
+//         blobName,
+//         description,
+//         parseInt(isPremium),
+//         parseInt(price)
+//       );
+//     } else {
+//       await addSolution(
+//         subjectId,
+//         title,
+//         solutionType,
+//         blobName,
+//         description,
+//         parseInt(isPremium),
+//         parseInt(price)
+//       );
+//     }
+//     return NextResponse.json({
+//       success: true,
+//       message: updateId ? "Solution update ho gaya!" : "Solution add ho gaya!",
+//       blobName,
+//     });
+//   } catch (error) {
+//     console.error("upload (metadata save) error:", error);
+//     return NextResponse.json(
+//       { success: false, error: String(error) },
+//       { status: 500 }
+//     );
+//   }
+// }
+
+
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
@@ -13,6 +78,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       blobName,
+      previewBlobName = null, // ← NEW
       subject_id: subjectId,
       solution_type: solutionType,
       price,
@@ -21,12 +87,14 @@ export async function POST(req: NextRequest) {
       is_premium: isPremium = "0",
       update_id: updateId = null,
     } = body;
+
     if (!blobName || !subjectId || !solutionType || !price || !title) {
       return NextResponse.json(
         { error: "Subject, Title, Type, Price aur PDF (blobName) sab chahiye" },
         { status: 400 }
       );
     }
+
     if (updateId) {
       await updateSolution(
         parseInt(updateId),
@@ -36,7 +104,8 @@ export async function POST(req: NextRequest) {
         blobName,
         description,
         parseInt(isPremium),
-        parseInt(price)
+        parseInt(price),
+        previewBlobName
       );
     } else {
       await addSolution(
@@ -46,9 +115,11 @@ export async function POST(req: NextRequest) {
         blobName,
         description,
         parseInt(isPremium),
-        parseInt(price)
+        parseInt(price),
+        previewBlobName
       );
     }
+
     return NextResponse.json({
       success: true,
       message: updateId ? "Solution update ho gaya!" : "Solution add ho gaya!",
@@ -56,9 +127,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("upload (metadata save) error:", error);
-    return NextResponse.json(
-      { success: false, error: String(error) },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }

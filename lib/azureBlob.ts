@@ -109,3 +109,17 @@ async function generatePreviewBlob(originalPdfBytes: Buffer, blobName: string) {
   // yahan azureBlob.ts ka uploadPDFToAzure() reuse karke previewBlobName se upload karo
   return previewBlobName;
 }
+
+
+
+
+export const getPreviewURL = async (blobName: string): Promise<string> => {
+  const containerClient = getContainerClient();
+  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const sasUrl = await blockBlobClient.generateSasUrl({
+    permissions: BlobSASPermissions.parse("r"),
+    expiresOn: new Date(new Date().valueOf() + 60 * 60 * 1000), // 1 hour
+    contentDisposition: "inline",
+  });
+  return sasUrl;
+};
