@@ -504,7 +504,7 @@ function CheckoutContent() {
                   <div className="rounded-xl overflow-hidden border border-gray-200 mb-4">
                     <iframe
                       src={`/api/preview?id=${solution.id}`}
-                      className="w-full h-[260px]"
+                      className="w-full h-65"
                       title="PDF preview"
                     />
                   </div>
