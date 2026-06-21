@@ -8,6 +8,11 @@ export default function ScalarPage() {
       configuration={{
         url: "/openapi.json",
         theme: "purple",
+        customStyles: {
+          colors: {
+            primary: "#E8700A",
+          },
+        },
       }}
     />
   );
