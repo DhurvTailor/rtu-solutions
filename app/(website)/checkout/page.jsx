@@ -31,7 +31,8 @@ function CheckoutContent() {
     script.id = "razorpay-checkout-script";
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.onload = () => setScriptLoaded(true);
-    script.onerror = () => setError("Payment gateway load nahi ho paya. Internet check karo.");
+    script.onerror = () =>
+      setError("Payment gateway load nahi ho paya. Internet check karo.");
     document.body.appendChild(script);
   }, []);
 
@@ -45,8 +46,20 @@ function CheckoutContent() {
     fetch(`/api/solutions?id=${solutionId}`)
       .then((res) => res.json())
       .then((data) => {
-        if (!data || data.error) setError("Solution nahi mila");
-        else setSolution(data);
+        // FIX: Agar API ne purane format mein (poori list) response
+        // bheja, ya koi error object aaya, ya khud null/undefined hai,
+        // to silently 0 price dikhane ke bajaye clear error dikhao.
+        if (!data || data.error) {
+          setError("Solution nahi mila");
+        } else if (Array.isArray(data)) {
+          setError(
+            "Solution load nahi hua (API ne list bheji, single solution nahi). /api/solutions/route.js ka 'id' param check karo."
+          );
+        } else if (!data.id) {
+          setError("Solution data incomplete hai");
+        } else {
+          setSolution(data);
+        }
       })
       .catch(() => setError("Solution load karne mein error aaya"))
       .finally(() => setLoading(false));
@@ -99,7 +112,9 @@ function CheckoutContent() {
             if (verifyData.success) {
               window.location.href = `/api/download?id=${solutionId}`;
             } else {
-              setError("Payment verify nahi ho paya. Agar paisa kat gaya hai to support contact karo.");
+              setError(
+                "Payment verify nahi ho paya. Agar paisa kat gaya hai to support contact karo."
+              );
             }
           } catch {
             setError("Verification mein error aaya");
@@ -142,8 +157,8 @@ function CheckoutContent() {
 
   if (error && !solution) {
     return (
-      <main className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-red-500 font-medium">{error}</p>
+      <main className="min-h-screen bg-gray-100 flex items-center justify-center px-5">
+        <p className="text-red-500 font-medium text-center max-w-md">{error}</p>
       </main>
     );
   }
@@ -163,20 +178,32 @@ function CheckoutContent() {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             <div className="bg-white rounded-3xl p-8 shadow-sm">
-              <h2 className="text-2xl font-bold text-[#071A3D] mb-8">Billing Details</h2>
+              <h2 className="text-2xl font-bold text-[#071A3D] mb-8">
+                Billing Details
+              </h2>
               <div className="space-y-3 text-gray-600">
-                <p><span className="font-semibold">Name:</span> {session?.user?.name || "Login karo pehle"}</p>
-                <p><span className="font-semibold">Email:</span> {session?.user?.email || "—"}</p>
+                <p>
+                  <span className="font-semibold">Name:</span>{" "}
+                  {session?.user?.name || "Login karo pehle"}
+                </p>
+                <p>
+                  <span className="font-semibold">Email:</span>{" "}
+                  {session?.user?.email || "—"}
+                </p>
               </div>
             </div>
 
             <div className="bg-white rounded-3xl p-8 shadow-sm mt-8">
-              <h2 className="text-2xl font-bold text-[#071A3D] mb-6">Payment Method</h2>
+              <h2 className="text-2xl font-bold text-[#071A3D] mb-6">
+                Payment Method
+              </h2>
               <div className="border border-orange-200 rounded-2xl p-5 flex items-center gap-4">
                 <FaCreditCard size={30} className="text-orange-500" />
                 <div>
                   <h3 className="font-semibold">Razorpay Payment Gateway</h3>
-                  <p className="text-gray-500 text-sm">UPI (QR), Debit Card, Credit Card, Net Banking</p>
+                  <p className="text-gray-500 text-sm">
+                    UPI (QR), Debit Card, Credit Card, Net Banking
+                  </p>
                 </div>
               </div>
             </div>
@@ -191,7 +218,9 @@ function CheckoutContent() {
                   <FaFilePdf className="text-red-500" size={25} />
                   <div>
                     <h3 className="font-semibold">{solution?.title || "—"}</h3>
-                    <p className="text-sm text-gray-500">{solution?.solution_type || ""}</p>
+                    <p className="text-sm text-gray-500">
+                      {solution?.solution_type || ""}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -218,7 +247,9 @@ function CheckoutContent() {
                 </div>
               </div>
 
-              {error && <p className="text-red-500 text-sm mt-4 text-center">{error}</p>}
+              {error && (
+                <p className="text-red-500 text-sm mt-4 text-center">{error}</p>
+              )}
 
               <button
                 onClick={handlePay}
