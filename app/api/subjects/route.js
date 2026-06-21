@@ -6,19 +6,40 @@ import {
 } from "@/services/subjectService";
 
 // GET
+// export async function GET(request) {
+//   try {
+//     const { searchParams } = new URL(request.url);
+//     const semester_id = searchParams.get("semester_id");
+
+//     const data = await getSubjects(semester_id);
+//     return Response.json(data);
+//   } catch (error) {
+//     console.log(error);
+//     return Response.json(
+//       { message: "Failed to fetch subjects" },
+//       { status: 500 }
+//     );
+//   }
+// }
+
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const semester_id = searchParams.get("semester_id");
+    const subjectId = searchParams.get("subject_id");
+    const id = searchParams.get("id"); // ← NEW
 
-    const data = await getSubjects(semester_id);
+    let data;
+    if (id) {
+      data = await getSolutionById(id); // ← NEW — checkout page isi se solution fetch karega
+    } else if (subjectId) {
+      data = await getSolutionsBySubject(subjectId);
+    } else {
+      data = await getSolutions();
+    }
     return Response.json(data);
   } catch (error) {
-    console.log(error);
-    return Response.json(
-      { message: "Failed to fetch subjects" },
-      { status: 500 }
-    );
+    return Response.json({ message: error.message }, { status: 500 });
   }
 }
 
