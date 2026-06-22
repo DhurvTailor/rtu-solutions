@@ -1,0 +1,886 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "RTU Solutions API",
+    "version": "1.0.0",
+    "description": "RTU Solutions — PDF marketplace for Rajasthan Technical University students. Sab routes yahan documented hain."
+  },
+  "tags": [
+    { "name": "Degrees", "description": "Degree hierarchy ka root (e.g. B.Tech RTU)" },
+    { "name": "Branches", "description": "Degree ke under branches (cse, it, AI)" },
+    { "name": "Semesters", "description": "Branch ke under semesters (1-8)" },
+    { "name": "Subjects", "description": "Semester ke under subjects" },
+    { "name": "Solutions", "description": "PDF solutions — CRUD + metadata" },
+    { "name": "Upload", "description": "Azure Blob direct upload (2-step: SAS URL → metadata save)" },
+    { "name": "Download", "description": "Secure PDF download — Azure SAS redirect, login + payment check" },
+    { "name": "Payment", "description": "Razorpay order create + signature verify" },
+    { "name": "Profile", "description": "Logged-in user ka student info" },
+    { "name": "Users", "description": "Admin — saare users ki list" },
+    { "name": "Dashboard", "description": "Admin stats" },
+    { "name": "YouTube", "description": "YouTube video data" }
+  ],
+  "components": {
+    "schemas": {
+      "Degree": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "B.Tech RTU" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Branch": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "degree_id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "cse" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Semester": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "branch_id": { "type": "integer", "example": 1 },
+          "semester_number": { "type": "integer", "example": 1 },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Subject": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "semester_id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Mathematics" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Solution": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 8 },
+          "subject_id": { "type": "integer", "example": 1 },
+          "title": { "type": "string", "example": "Math 2026 PYQ Solutions" },
+          "solution_type": {
+            "type": "string",
+            "enum": ["complete_notes", "important_questions", "pyq_solutions", "assignment"],
+            "example": "pyq_solutions"
+          },
+          "pdf_url": {
+            "type": "string",
+            "description": "Azure blob name (NOT full URL) — e.g. 1781970332363-notes.pdf",
+            "example": "1781970332363-notes.pdf"
+          },
+          "preview_blob_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "2-page preview ka Azure blob name — NULL agar purana solution hai",
+            "example": "1781970332363-preview-notes.pdf"
+          },
+          "description": { "type": "string", "nullable": true },
+          "is_premium": { "type": "integer", "enum": [0, 1], "example": 1 },
+          "price": { "type": "number", "format": "decimal", "example": 10.00 },
+          "created_at": { "type": "string", "format": "date-time" },
+          "subject_name": { "type": "string", "example": "Mathematics", "description": "JOIN se aata hai" },
+          "semester_id": { "type": "integer" },
+          "semester_number": { "type": "integer" },
+          "branch_id": { "type": "integer" },
+          "branch_name": { "type": "string" },
+          "degree_id": { "type": "integer" },
+          "degree_name": { "type": "string" }
+        }
+      },
+      "Purchase": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "solution_id": { "type": "integer" },
+          "amount_paid": { "type": "number", "example": 10.00 },
+          "payment_status": { "type": "string", "enum": ["pending", "paid"], "example": "paid" },
+          "payment_id": { "type": "string", "nullable": true, "example": "pay_xyz123" },
+          "razorpay_order_id": { "type": "string", "nullable": true, "example": "order_abc123" },
+          "razorpay_signature": { "type": "string", "nullable": true },
+          "purchased_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DownloadHistory": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "solution_id": { "type": "integer" },
+          "title": { "type": "string", "description": "JOIN se — solution ka title" },
+          "subject_name": { "type": "string", "description": "JOIN se" },
+          "solution_type": { "type": "string" },
+          "is_premium": { "type": "integer" },
+          "was_trial": { "type": "integer", "enum": [0, 1], "description": "1 = trial mein free mila, 0 = purchased ya free solution" },
+          "downloaded_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "google_id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "img": { "type": "string", "nullable": true },
+          "role": { "type": "string", "enum": ["user", "admin"] },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "StudentInfo": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "user_id": { "type": "integer" },
+          "phone_numberA": { "type": "string", "example": "9521634141" },
+          "phone_numberB": { "type": "string", "nullable": true },
+          "college": { "type": "string", "nullable": true },
+          "city": { "type": "string", "nullable": true },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "error": { "type": "string" }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/degrees": {
+      "get": {
+        "tags": ["Degrees"],
+        "summary": "Saare degrees fetch karo",
+        "description": "Public endpoint — no auth required. Homepage pe degree dropdown ke liye.",
+        "responses": {
+          "200": {
+            "description": "Degrees array",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Degree" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Degrees"],
+        "summary": "Naya degree add karo",
+        "description": "Admin only. `name` unique hona chahiye.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "example": "M.Tech" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Added", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "500": { "description": "Duplicate name ya DB error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "put": {
+        "tags": ["Degrees"],
+        "summary": "Degree name update karo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id", "name"],
+                "properties": {
+                  "id": { "type": "integer", "example": 1 },
+                  "name": { "type": "string", "example": "B.Tech RTU (Updated)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated" }
+        }
+      },
+      "delete": {
+        "tags": ["Degrees"],
+        "summary": "Degree delete karo",
+        "description": "Agar branches linked hain to FK error aayega.",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" }, "example": 1 }
+        ],
+        "responses": {
+          "200": { "description": "Deleted" },
+          "500": { "description": "FK constraint — pehle branches delete karo" }
+        }
+      }
+    },
+    "/api/branch": {
+      "get": {
+        "tags": ["Branches"],
+        "summary": "Branches fetch karo",
+        "description": "degree_id dene par filtered result, warna saari branches.",
+        "parameters": [
+          { "name": "degree_id", "in": "query", "required": false, "schema": { "type": "integer" }, "example": 1 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Branches array (degree_name bhi JOIN se aata hai)",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Branch" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Branches"],
+        "summary": "Naya branch add karo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["degree_id", "name"],
+                "properties": {
+                  "degree_id": { "type": "integer", "example": 1 },
+                  "name": { "type": "string", "example": "Mechanical" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Branch added" } }
+      },
+      "put": {
+        "tags": ["Branches"],
+        "summary": "Branch update karo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer" },
+                  "degree_id": { "type": "integer" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "tags": ["Branches"],
+        "summary": "Branch delete karo",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/api/semesters": {
+      "get": {
+        "tags": ["Semesters"],
+        "summary": "Semesters fetch karo",
+        "parameters": [
+          { "name": "branch_id", "in": "query", "required": false, "schema": { "type": "integer" }, "example": 1 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Semesters array",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Semester" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Semesters"],
+        "summary": "Naya semester add karo",
+        "description": "branch_id + semester_number UNIQUE hai — duplicate add karne par error aayega.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["branch_id", "semester_number"],
+                "properties": {
+                  "branch_id": { "type": "integer", "example": 1 },
+                  "semester_number": { "type": "integer", "example": 1 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Added" } }
+      },
+      "put": {
+        "tags": ["Semesters"],
+        "summary": "Semester update karo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer" },
+                  "branch_id": { "type": "integer" },
+                  "semester_number": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "tags": ["Semesters"],
+        "summary": "Semester delete karo",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/api/subjects": {
+      "get": {
+        "tags": ["Subjects"],
+        "summary": "Subjects fetch karo",
+        "parameters": [
+          { "name": "semester_id", "in": "query", "required": false, "schema": { "type": "integer" }, "example": 1 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subjects array",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Subject" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Subjects"],
+        "summary": "Naya subject add karo",
+        "description": "semester_id + name UNIQUE hai.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["semester_id", "name"],
+                "properties": {
+                  "semester_id": { "type": "integer", "example": 1 },
+                  "name": { "type": "string", "example": "Data Structures" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Added" } }
+      },
+      "put": {
+        "tags": ["Subjects"],
+        "summary": "Subject update karo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer" },
+                  "semester_id": { "type": "integer" },
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "tags": ["Subjects"],
+        "summary": "Subject delete karo",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/api/solutions": {
+      "get": {
+        "tags": ["Solutions"],
+        "summary": "Solutions fetch karo — teen modes",
+        "description": "**Mode 1:** `?id=X` — single solution (checkout page ke liye, object return hota hai). **Mode 2:** `?subject_id=X` — subject ke saare solutions (Notes.jsx ke liye, array return hota hai). **Mode 3:** no params — saare solutions (admin table ke liye, full JOIN ke saath).",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" },
+            "description": "Single solution by ID — object return hota hai (array nahi)",
+            "example": 8
+          },
+          {
+            "name": "subject_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" },
+            "description": "Subject ke saare solutions — array return hota hai",
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "id=X diya to: single Solution object. Subject_id ya no params: Solution array",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/Solution" },
+                    { "type": "array", "items": { "$ref": "#/components/schemas/Solution" } }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Solutions"],
+        "summary": "Solution metadata update karo (same PDF) — admin only",
+        "description": "Jab admin naya PDF nahi upload karta — sirf title, price, type etc. badalta hai.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["id", "subject_id", "title", "solution_type", "pdf_url", "price"],
+                "properties": {
+                  "id": { "type": "integer", "example": 8 },
+                  "subject_id": { "type": "integer", "example": 1 },
+                  "title": { "type": "string", "example": "Updated Title" },
+                  "solution_type": { "type": "string", "enum": ["complete_notes", "important_questions", "pyq_solutions", "assignment"] },
+                  "pdf_url": { "type": "string", "description": "Existing blob name", "example": "1781970332363-notes.pdf" },
+                  "preview_blob_name": { "type": "string", "nullable": true, "description": "Existing preview blob name — null agar preview nahi tha" },
+                  "description": { "type": "string", "nullable": true },
+                  "price": { "type": "number", "example": 10.00 },
+                  "is_premium": { "type": "integer", "enum": [0, 1], "example": 1 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Updated successfully" },
+          "500": { "description": "DB error" }
+        }
+      },
+      "delete": {
+        "tags": ["Solutions"],
+        "summary": "Solution delete karo — DB row + Azure blob dono — admin only",
+        "description": "**Agar kisi student ne ye solution khareeda hai (purchases table mein paid record hai) to 409 aayega** — financial record protect karne ke liye. Pehle Azure blob delete hota hai, phir DB row.",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" }, "example": 8 }
+        ],
+        "responses": {
+          "200": { "description": "Solution aur uski PDF dono delete ho gayi" },
+          "400": { "description": "id missing" },
+          "404": { "description": "Solution nahi mila" },
+          "409": {
+            "description": "Delete blocked — students ne purchase kiya hai",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Ye solution delete nahi ho sakta — 2 students ne already isko khareeda hai." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload-url": {
+      "post": {
+        "tags": ["Upload"],
+        "summary": "Azure Blob write-only SAS URL generate karo — admin only",
+        "description": "**Step 1 of 2** — Ye URL milne ke baad frontend seedha Azure par PUT request karta hai (Vercel server bypass). Isse Vercel ki 4.5MB body limit se bacha jaata hai. 15 minute valid rehta hai.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fileName"],
+                "properties": {
+                  "fileName": { "type": "string", "example": "math-notes.pdf", "description": "Original file name — timestamp prefix automatically add hoga" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SAS URL generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "blobName": { "type": "string", "example": "1781970332363-math-notes.pdf", "description": "Ye naam /api/upload mein save karna hai" },
+                    "uploadUrl": { "type": "string", "description": "Azure SAS URL — is par PUT karo directly" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Admin only" }
+        }
+      }
+    },
+    "/api/upload": {
+      "post": {
+        "tags": ["Upload"],
+        "summary": "Azure upload ke baad solution metadata DB mein save karo — admin only",
+        "description": "**Step 2 of 2** — Pehle `/api/upload-url` se SAS leke Azure par PUT karo (original + preview dono), phir ye endpoint call karo. Preview PDF browser mein pdf-lib se banaya jaata hai (pehle 2 pages).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["blobName", "subject_id", "solution_type", "price", "title"],
+                "properties": {
+                  "blobName": { "type": "string", "example": "1781970332363-math-notes.pdf", "description": "upload-url se mila blob name" },
+                  "previewBlobName": { "type": "string", "nullable": true, "example": "1781970332363-preview-math-notes.pdf", "description": "Preview ka blob name (optional — agar upload hua)" },
+                  "subject_id": { "type": "integer", "example": 1 },
+                  "solution_type": { "type": "string", "enum": ["complete_notes", "important_questions", "pyq_solutions", "assignment"] },
+                  "price": { "type": "number", "example": 10 },
+                  "title": { "type": "string", "example": "Math 2026 PYQ Solutions" },
+                  "description": { "type": "string", "nullable": true },
+                  "is_premium": { "type": "string", "enum": ["0", "1"], "example": "1" },
+                  "update_id": { "type": "string", "nullable": true, "description": "Edit mode mein existing solution ka ID", "example": "8" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Solution saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "blobName": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Required fields missing" },
+          "401": { "description": "Admin only" }
+        }
+      }
+    },
+    "/api/download": {
+      "get": {
+        "tags": ["Download"],
+        "summary": "Secure PDF download — Azure SAS redirect (login required)",
+        "description": "**Security flow:** 1) Login check — nahi hai to `/login` redirect. 2) Agar premium — `purchases` table mein `payment_status='paid'` check. 3) Sab theek hai to Azure SAS URL (15 min valid, `attachment` disposition) generate karo aur redirect karo. 4) `download_history` mein log karo.\n\n**Important:** `pdf_url` column mein full URL nahi, sirf **blob name** store hota hai.",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" }, "example": 8, "description": "Solution ID" }
+        ],
+        "responses": {
+          "302": { "description": "Azure SAS URL par redirect (file download start hogi)" },
+          "401": { "description": "Login nahi — /login par redirect" },
+          "403": { "description": "Premium solution — purchases table mein paid record nahi mila" },
+          "404": { "description": "Solution ya pdf_url nahi mila" },
+          "500": { "description": "Azure ya DB error" }
+        }
+      }
+    },
+    "/api/download/access": {
+      "get": {
+        "tags": ["Download"],
+        "summary": "Download access pre-check — bina actual download trigger kiye",
+        "description": "Notes.jsx mein button click hone par pehle ye call hoti hai — decide karne ke liye ki `/api/download` seedha call karein ya `/checkout` pe bhejein. Isse user experience smooth rehta hai.",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" }, "example": 8 }
+        ],
+        "responses": {
+          "200": {
+            "description": "Access status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "canDownloadFree": { "type": "boolean", "example": true },
+                    "reason": {
+                      "type": "string",
+                      "enum": ["free", "purchased", "trial_already_unlocked", "trial_new", "payment_required", "login_required"],
+                      "description": "free=free solution | purchased=paid kar chuka | trial_already_unlocked=pehle trial se mila tha | trial_new=naya trial slot available | payment_required=trial khatam, pay karo | login_required=login nahi hai"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/downloads/history": {
+      "get": {
+        "tags": ["Download"],
+        "summary": "Current logged-in user ki puri download history",
+        "description": "`download_history` table se fetch hota hai. Repeat downloads bhi alag entries banate hain (alag `downloaded_at` ke saath). `was_trial=1` matlab trial mein free mila, `was_trial=0` matlab paid/free solution.",
+        "responses": {
+          "200": {
+            "description": "Download history list — latest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/DownloadHistory" }
+                }
+              }
+            }
+          },
+          "401": { "description": "Login required" }
+        }
+      }
+    },
+    "/api/preview": {
+      "get": {
+        "tags": ["Download"],
+        "summary": "Solution ka 2-page preview PDF (public — no login required)",
+        "description": "**Security note:** Ye sirf pehle 2 pages dikhata hai — poora PDF nahi. `preview_blob_name` column se Azure SAS URL banata hai (`inline` content-disposition — browser mein khulega, download nahi hoga). Agar `preview_blob_name` NULL hai (purana solution) to 404 aata hai.\n\nPreview blob `pdf-lib` se **browser mein** ban jaata hai jab admin solution upload karta hai — Vercel server is process mein involved nahi hota.",
+        "parameters": [
+          { "name": "id", "in": "query", "required": true, "schema": { "type": "integer" }, "example": 8 }
+        ],
+        "responses": {
+          "302": { "description": "Azure preview SAS URL par redirect (inline — browser mein PDF render hoga)" },
+          "404": { "description": "preview_blob_name NULL hai — purana solution, preview available nahi" },
+          "500": { "description": "Azure ya DB error" }
+        }
+      }
+    },
+    "/api/payment/create-order": {
+      "post": {
+        "tags": ["Payment"],
+        "summary": "Razorpay order banao (login required)",
+        "description": "**CRITICAL SECURITY:** Price client se kabhi accept nahi karta — hamesha `solutions` table se DB se fetch karta hai. Isse koi bhi client-side price manipulation possible nahi. `purchases` table mein `pending` row insert hoti hai (ya update hoti hai agar pehle se exist karti).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["solution_id"],
+                "properties": {
+                  "solution_id": { "type": "integer", "example": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Razorpay order created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "orderId": { "type": "string", "example": "order_QxV2abc123" },
+                    "amount": { "type": "integer", "example": 1000, "description": "Paise mein (rupees × 100)" },
+                    "keyId": { "type": "string", "example": "rzp_test_xxxxxxxxxx", "description": "Public key — frontend Razorpay modal ke liye" },
+                    "title": { "type": "string", "example": "Math 2026 PYQ Solutions" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Ye free solution hai, payment ki zaroorat nahi" },
+          "401": { "description": "Login required" },
+          "404": { "description": "Solution nahi mila" }
+        }
+      }
+    },
+    "/api/payment/verify": {
+      "post": {
+        "tags": ["Payment"],
+        "summary": "Razorpay HMAC signature verify karo — purchase paid mark karo",
+        "description": "**Security:** HMAC-SHA256 signature verify hoti hai `RAZORPAY_KEY_SECRET` se — isse fake payment attempts pakde jaate hain. Signature match hone par `purchases` table mein `payment_status='paid'`, `payment_id`, aur `razorpay_signature` set hota hai. Sirf is ke baad `/api/download` kaam karta hai us solution ke liye.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["razorpay_order_id", "razorpay_payment_id", "razorpay_signature"],
+                "properties": {
+                  "razorpay_order_id": { "type": "string", "example": "order_QxV2abc123" },
+                  "razorpay_payment_id": { "type": "string", "example": "pay_xyz789def" },
+                  "razorpay_signature": { "type": "string", "example": "abc123...hmac" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "solutionId": { "type": "integer", "example": 8 }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Signature mismatch — fake payment attempt" },
+          "401": { "description": "Login required" },
+          "403": { "description": "Ye order is user ka nahi — ownership check fail" },
+          "404": { "description": "razorpay_order_id ke against purchases table mein row nahi mili" }
+        }
+      }
+    },
+    "/api/profile/student-info": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "Current user ka student info fetch karo",
+        "description": "`student_information` table se — user_id se joined. Agar record nahi hai to empty response.",
+        "responses": {
+          "200": {
+            "description": "Student info",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/StudentInfo" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Profile"],
+        "summary": "Student info save/update karo",
+        "description": "Upsert — pehle se record hai to update, nahi hai to insert.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["phone_numberA"],
+                "properties": {
+                  "phone_numberA": { "type": "string", "example": "9521634141" },
+                  "phone_numberB": { "type": "string", "nullable": true },
+                  "college": { "type": "string", "nullable": true, "example": "Govt Engineering College Ajmer" },
+                  "city": { "type": "string", "nullable": true, "example": "Jaipur" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Student info saved" }
+        }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Saare users ki list — admin only",
+        "description": "`users` table se saare records. Admin panel ke UserTable component mein use hota hai.",
+        "responses": {
+          "200": {
+            "description": "Users array",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dashboard": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Admin dashboard stats",
+        "description": "Total users count + total solutions count. Admin homepage par stats cards ke liye.",
+        "responses": {
+          "200": {
+            "description": "Stats",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": { "type": "integer", "example": 5 },
+                    "solutions": { "type": "integer", "example": 3 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/youtube": {
+      "get": {
+        "tags": ["YouTube"],
+        "summary": "YouTube channel/video data fetch karo",
+        "description": "YouTube Data API v3 se data aata hai — `YOUTUBE_API_KEY` env variable se.",
+        "responses": {
+          "200": { "description": "YouTube data" }
+        }
+      }
+    }
+  }
+}
