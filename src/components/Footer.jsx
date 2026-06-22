@@ -49,7 +49,20 @@ export default function Footer() {
 
             </div>
           </div>
+<div>
+            <h3 className="font-bold text-lg mb-4">
+              Payments Links
+            </h3>
 
+            <ul className="space-y-3 text-gray-300">
+
+        <li> <Link href="/privacy-policy">Privacy Policy</Link></li> 
+        <li>  <Link href="/refund-policy">Refund Policy</Link></li>
+         <li>  <Link href="/terms">Terms & Conditions</Link></li>
+
+            </ul>
+          </div>
+        
           {/* Quick Links */}
           <div>
             <h3 className="font-bold text-lg mb-4">
