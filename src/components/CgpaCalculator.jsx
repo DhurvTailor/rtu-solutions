@@ -7,7 +7,7 @@ import {
   getGradeFromMarks,
   calculateSGPA,
   calculateCGPA,
-} from "@/src/data/rtuSubjects";
+} from "../data/rtuSubjects";
 
 // ─── Small helper components ──────────────────────────────────────────────────
 

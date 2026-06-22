@@ -29,28 +29,43 @@ export default function Notes() {
   const [loadingSubjects, setLoadingSubjects] = useState(false);
   const [loadingSolutions, setLoadingSolutions] = useState(false);
 
-  useEffect(() => {
-    fetch("/api/degrees")
-      .then((res) => res.json())
-      .then((data) => setDegrees(data))
-      .catch((err) => console.log(err));
-  }, []);
+useEffect(() => {
+  const fetchDegrees = async () => {
+    const res = await fetch("/api/degrees");
+    const data = await res.json();
 
-  useEffect(() => {
-    if (!degree) return;
-    fetch(`/api/branch?degree_id=${degree}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setBranches(data);
-        setSemesters([]);
-        setSubjects([]);
-        setSolutions([]);
+    setDegrees(data);
+
+    if (data.length > 0) {
+      setDegree(String(data[0].id));
+    }
+  };
+
+  fetchDegrees();
+}, []);
+
+useEffect(() => {
+  if (!degree) return;
+
+  fetch(`/api/branch?degree_id=${degree}`)
+    .then((res) => res.json())
+    .then((data) => {
+      setBranches(data);
+
+      setSemesters([]);
+      setSubjects([]);
+      setSolutions([]);
+
+      setSemester("");
+      setSubject("");
+
+      if (data.length > 0) {
+        setBranch(String(data[0].id));
+      } else {
         setBranch("");
-        setSemester("");
-        setSubject("");
-      })
-      .catch((err) => console.log(err));
-  }, [degree]);
+      }
+    });
+}, [degree]);
 
   useEffect(() => {
     if (!branch) return;
@@ -62,6 +77,10 @@ export default function Notes() {
         setSolutions([]);
         setSemester("");
         setSubject("");
+        if (data.length > 0) {
+          setSemester(String(data[0].id));
+        }
+
       })
       .catch((err) => console.log(err));
   }, [branch]);
@@ -75,6 +94,9 @@ export default function Notes() {
         setSubjects(data);
         setSolutions([]);
         setSubject("");
+        if (data.length > 0) {
+          setSubject(String(data[0].id));
+        }
       })
       .catch((err) => console.log(err))
       .finally(() => setLoadingSubjects(false));

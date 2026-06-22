@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import db from "../lib/db";
 
 // Get All Branches
 export async function getBranches() {

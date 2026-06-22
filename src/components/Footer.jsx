@@ -95,7 +95,7 @@ export default function Footer() {
           </div>
 
           {/* Subjects */}
-          <div>
+          {/* <div>
             <h3 className="font-bold text-lg mb-4">
               Subjects
             </h3>
@@ -113,7 +113,7 @@ export default function Footer() {
               <li>Operating System</li>
 
             </ul>
-          </div>
+          </div> */}
 
           {/* Resources */}
           <div>

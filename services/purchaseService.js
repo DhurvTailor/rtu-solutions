@@ -1,4 +1,4 @@
-import db from "@/lib/db";
+import db from "../lib/db";
 
 // Payment shuru hote hi ek "pending" row daal do (ya agar pehle se hai
 // to use update kar do — UNIQUE KEY (user_id, solution_id) isliye hi
