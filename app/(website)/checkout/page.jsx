@@ -257,7 +257,7 @@ function CheckoutContent() {
               </p>
 
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl mb-4">
-                <div className="w-10 h-10 bg-white border border-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-white border border-gray-100 rounded-lg flex items-center justify-center shrink-0">
                   <FaFilePdf className="text-red-400" size={18} />
                 </div>
                 <div className="min-w-0">
