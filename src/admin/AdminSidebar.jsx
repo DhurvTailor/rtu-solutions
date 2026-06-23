@@ -142,11 +142,7 @@ export default function AdminSidebar() {
       path: "/admin/solutions",
       icon: <FiFileText size={20} />,
     },
-    {
-      name: "Videos",
-      path: "/admin/videos",
-      icon: <FiVideo size={20} />,
-    },
+
     {
       name: "Users",
       path: "/admin/users",

@@ -1,6 +1,11 @@
+
+
+
+
 // "use client";
 
 // import { useState, useEffect, useRef } from "react";
+// import { PDFDocument } from "pdf-lib";
 // import {
 //   Card, CardContent, CardHeader, CardTitle,
 // } from "../components/ui/card";
@@ -41,11 +46,24 @@
 
 //   const [pdfFile, setPdfFile] = useState(null);
 //   const [existingPdfUrl, setExistingPdfUrl] = useState("");
+//   const [existingPreviewBlobName, setExistingPreviewBlobName] = useState(""); // ← NEW
 //   const [editingId, setEditingId] = useState(null);
 //   const [loading, setLoading] = useState(false);
 //   const [uploadProgress, setUploadProgress] = useState("");
 
 //   const fileInputRef = useRef(null);
+
+//   // ── Browser mein hi PDF ke pehle 2 page se ek choti preview PDF banao ── NEW
+//   const generatePreviewPdf = async (file) => {
+//     const originalBytes = await file.arrayBuffer();
+//     const srcDoc = await PDFDocument.load(originalBytes);
+//     const previewDoc = await PDFDocument.create();
+//     const pageCount = Math.min(2, srcDoc.getPageCount());
+//     const pages = await previewDoc.copyPages(previewDoc === srcDoc ? srcDoc : srcDoc, [...Array(pageCount).keys()]);
+//     pages.forEach((p) => previewDoc.addPage(p));
+//     const previewBytes = await previewDoc.save();
+//     return new Blob([previewBytes], { type: "application/pdf" });
+//   };
 
 //   // ── Reset ─────────────────────────────────────────────────
 //   const resetForm = () => {
@@ -54,6 +72,7 @@
 //     setTitle(""); setSolutionType(""); setPrice("");
 //     setDescription(""); setIsPremium(false);
 //     setPdfFile(null); setExistingPdfUrl("");
+//     setExistingPreviewBlobName(""); // ← NEW
 //     setEditingId(null); setUploadProgress("");
 //     if (fileInputRef.current) fileInputRef.current.value = "";
 //   };
@@ -67,7 +86,6 @@
 //     } catch (e) { console.error(e); }
 //   };
 
-//   // FIX: route folder is "app/api/branch" (singular), not "branches"
 //   const fetchBranches = async (degId) => {
 //     if (!degId) { setBranches([]); return; }
 //     try {
@@ -106,13 +124,12 @@
 //   // Initial load
 //   useEffect(() => { fetchDegrees(); fetchSolutions(); }, []);
 
-//   // Cascading fetches — fire whenever the parent selection changes
-//   // (works for both manual selection AND edit-mode prefill)
+//   // Cascading fetches
 //   useEffect(() => { fetchBranches(degreeId); }, [degreeId]);
 //   useEffect(() => { fetchSemesters(branchId); }, [branchId]);
 //   useEffect(() => { fetchSubjects(semesterId); }, [semesterId]);
 
-//   // ── Dropdown change handlers — clear everything downstream ──
+//   // ── Dropdown change handlers ──
 //   const handleDegreeChange = (e) => {
 //     setDegreeId(e.target.value);
 //     setBranchId(""); setSemesterId(""); setSubjectId("");
@@ -169,10 +186,9 @@
 //     try {
 //       setLoading(true);
 
-//       // New solution OR edit with new PDF → 3-step direct-to-Azure upload
-//       // (file Vercel se hokar nahi guzarta, isliye size limit ka issue nahi aata)
+//       // New solution OR edit with new PDF → direct-to-Azure upload (original + preview)
 //       if (!editingId || pdfFile) {
-//         // Step 1: secure upload URL maango
+//         // Step 1: asli PDF ke liye upload URL maango
 //         setUploadProgress("Upload URL generate ho rahi hai...");
 //         const urlRes = await fetch("/api/upload-url", {
 //           method: "POST",
@@ -182,25 +198,45 @@
 //         const urlData = await urlRes.json();
 //         if (!urlRes.ok || !urlData.success) throw new Error(urlData.error || "Upload URL nahi mili");
 
-//         // Step 2: PDF seedha Azure par upload karo (Vercel server bypass)
+//         // Step 1b: preview PDF ke liye alag upload URL maango
+//         const previewUrlRes = await fetch("/api/upload-url", {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({ fileName: `preview-${pdfFile.name}` }),
+//         });
+//         const previewUrlData = await previewUrlRes.json();
+//         if (!previewUrlRes.ok || !previewUrlData.success) throw new Error("Preview upload URL nahi mili");
+
+//         // Step 2: browser mein hi 2-page preview banao
+//         setUploadProgress("Preview PDF (pehle 2 page) ban rahi hai...");
+//         const previewBlob = await generatePreviewPdf(pdfFile);
+
+//         // Step 3: asli PDF seedha Azure par upload karo
 //         setUploadProgress("PDF Azure par directly upload ho rahi hai...");
 //         const azureRes = await fetch(urlData.uploadUrl, {
 //           method: "PUT",
-//           headers: {
-//             "x-ms-blob-type": "BlockBlob",
-//             "Content-Type": "application/pdf",
-//           },
+//           headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": "application/pdf" },
 //           body: pdfFile,
 //         });
 //         if (!azureRes.ok) throw new Error("Azure upload fail ho gaya. Network ya CORS check karo.");
 
-//         // Step 3: chhota sa JSON bhejo DB mein save karne ke liye
+//         // Step 4: preview PDF bhi Azure par upload karo
+//         setUploadProgress("Preview Azure par upload ho rahi hai...");
+//         const previewAzureRes = await fetch(previewUrlData.uploadUrl, {
+//           method: "PUT",
+//           headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": "application/pdf" },
+//           body: previewBlob,
+//         });
+//         if (!previewAzureRes.ok) throw new Error("Preview upload fail ho gaya.");
+
+//         // Step 5: dono blob names DB mein save karo
 //         setUploadProgress("Details save ho rahi hain...");
 //         const res = await fetch("/api/upload", {
 //           method: "POST",
 //           headers: { "Content-Type": "application/json" },
 //           body: JSON.stringify({
 //             blobName: urlData.blobName,
+//             previewBlobName: previewUrlData.blobName,
 //             subject_id: subjectId,
 //             solution_type: solutionType,
 //             price,
@@ -220,7 +256,7 @@
 //         return;
 //       }
 
-//       // Edit with same PDF → only update metadata
+//       // Edit with same PDF → only update metadata (preview bhi same rahega)
 //       setUploadProgress("Updating...");
 //       const res = await fetch("/api/solutions", {
 //         method: "PUT",
@@ -228,6 +264,7 @@
 //         body: JSON.stringify({
 //           id: editingId, subject_id: subjectId, title,
 //           solution_type: solutionType, pdf_url: existingPdfUrl,
+//           preview_blob_name: existingPreviewBlobName,
 //           description, price: parseFloat(price),
 //           is_premium: isPremium ? 1 : 0,
 //         }),
@@ -251,10 +288,6 @@
 //   const handleEdit = (solution) => {
 //     setEditingId(solution.id);
 
-//     // Cascading effects (degreeId -> branches, branchId -> semesters,
-//     // semesterId -> subjects) automatically fire and populate the
-//     // option lists; setting all 4 ids together makes every select
-//     // land on the correct value once its list arrives.
 //     setDegreeId(solution.degree_id ? solution.degree_id.toString() : "");
 //     setBranchId(solution.branch_id ? solution.branch_id.toString() : "");
 //     setSemesterId(solution.semester_id ? solution.semester_id.toString() : "");
@@ -266,6 +299,7 @@
 //     setDescription(solution.description || "");
 //     setIsPremium(solution.is_premium === 1 || solution.is_premium === true);
 //     setExistingPdfUrl(solution.file_url || solution.pdf_url || "");
+//     setExistingPreviewBlobName(solution.preview_blob_name || ""); // ← NEW
 //     setPdfFile(null);
 //     setUploadProgress("");
 //     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -291,6 +325,7 @@
 //       <div>
 //         <p className="font-semibold text-green-700">✅ {pdfFile.name}</p>
 //         <p className="text-xs text-gray-500 mt-1">{(pdfFile.size / 1024 / 1024).toFixed(2)} MB</p>
+//         <p className="text-xs text-blue-500 mt-1">Pehle 2 page ka preview automatic ban jayega</p>
 //         <button
 //           type="button"
 //           onClick={(e) => { e.stopPropagation(); setPdfFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
@@ -317,7 +352,6 @@
 //     );
 //   };
 
-//   // Shared select styling — disabled selects look visibly inactive
 //   const selectClass = "w-full h-12 px-4 border rounded-lg bg-white text-black disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed";
 
 //   return (
@@ -330,56 +364,35 @@
 //       <CardContent className="p-6">
 //         <form onSubmit={handleSubmit} className="space-y-6 mb-8">
 
-//           {/* ── Step 1: Course hierarchy ── */}
 //           <div className="rounded-2xl border border-gray-200 p-4">
 //             <p className="text-xs font-bold tracking-wide text-gray-400 uppercase mb-3">
 //               Course details
 //             </p>
 //             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-//               <select
-//                 value={degreeId}
-//                 onChange={handleDegreeChange}
-//                 className={selectClass}
-//               >
+//               <select value={degreeId} onChange={handleDegreeChange} className={selectClass}>
 //                 <option value="">Select degree *</option>
 //                 {degrees.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
 //               </select>
 
-//               <select
-//                 value={branchId}
-//                 onChange={handleBranchChange}
-//                 disabled={!degreeId}
-//                 className={selectClass}
-//               >
+//               <select value={branchId} onChange={handleBranchChange} disabled={!degreeId} className={selectClass}>
 //                 <option value="">{degreeId ? "Select branch *" : "Pehle degree select karo"}</option>
 //                 {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
 //               </select>
 
-//               <select
-//                 value={semesterId}
-//                 onChange={handleSemesterChange}
-//                 disabled={!branchId}
-//                 className={selectClass}
-//               >
+//               <select value={semesterId} onChange={handleSemesterChange} disabled={!branchId} className={selectClass}>
 //                 <option value="">{branchId ? "Select semester *" : "Pehle branch select karo"}</option>
 //                 {semesters.map((s) => (
 //                   <option key={s.id} value={s.id}>Semester {s.semester_number}</option>
 //                 ))}
 //               </select>
 
-//               <select
-//                 value={subjectId}
-//                 onChange={(e) => setSubjectId(e.target.value)}
-//                 disabled={!semesterId}
-//                 className={selectClass}
-//               >
+//               <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} disabled={!semesterId} className={selectClass}>
 //                 <option value="">{semesterId ? "Select subject *" : "Pehle semester select karo"}</option>
 //                 {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
 //               </select>
 //             </div>
 //           </div>
 
-//           {/* ── Step 2: Solution details ── */}
 //           <div className="rounded-2xl border border-gray-200 p-4 space-y-3">
 //             <p className="text-xs font-bold tracking-wide text-gray-400 uppercase mb-1">
 //               Solution details
@@ -389,8 +402,7 @@
 //               onChange={(e) => setTitle(e.target.value)} className="h-12" />
 
 //             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-//               <select value={solutionType} onChange={(e) => setSolutionType(e.target.value)}
-//                 className={selectClass}>
+//               <select value={solutionType} onChange={(e) => setSolutionType(e.target.value)} className={selectClass}>
 //                 <option value="">Select solution type *</option>
 //                 {SOLUTION_TYPES.map((t) => (
 //                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -415,7 +427,6 @@
 //             </label>
 //           </div>
 
-//           {/* ── Step 3: PDF Upload ── */}
 //           <div>
 //             <label className="block text-sm font-semibold mb-2 text-gray-700">
 //               PDF file {editingId ? "(naya upload karo ya same rakho)" : "*"}
@@ -460,7 +471,6 @@
 //           </div>
 //         </form>
 
-//         {/* ── Table ── */}
 //         <div className="rounded-2xl border overflow-hidden">
 //           <div className="bg-[#142647] px-4 py-3 flex items-center justify-between">
 //             <h3 className="text-white font-semibold">Solution list</h3>
@@ -529,6 +539,7 @@
 
 
 
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -551,20 +562,17 @@ const SOLUTION_TYPES = [
 ];
 
 export default function SolutionForm() {
-  // ── Cascading dropdown data ──────────────────────────────
   const [degrees, setDegrees] = useState([]);
   const [branches, setBranches] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [solutions, setSolutions] = useState([]);
 
-  // ── Cascading dropdown selections ────────────────────────
   const [degreeId, setDegreeId] = useState("");
   const [branchId, setBranchId] = useState("");
   const [semesterId, setSemesterId] = useState("");
   const [subjectId, setSubjectId] = useState("");
 
-  // ── Solution fields ───────────────────────────────────────
   const [title, setTitle] = useState("");
   const [solutionType, setSolutionType] = useState("");
   const [price, setPrice] = useState("");
@@ -572,39 +580,41 @@ export default function SolutionForm() {
   const [isPremium, setIsPremium] = useState(false);
 
   const [pdfFile, setPdfFile] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);        // ← NEW
   const [existingPdfUrl, setExistingPdfUrl] = useState("");
-  const [existingPreviewBlobName, setExistingPreviewBlobName] = useState(""); // ← NEW
+  const [existingPreviewBlobName, setExistingPreviewBlobName] = useState("");
+  const [existingThumbnailBlobName, setExistingThumbnailBlobName] = useState(""); // ← NEW
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
 
   const fileInputRef = useRef(null);
+  const thumbnailInputRef = useRef(null);  // ← NEW
 
-  // ── Browser mein hi PDF ke pehle 2 page se ek choti preview PDF banao ── NEW
   const generatePreviewPdf = async (file) => {
     const originalBytes = await file.arrayBuffer();
     const srcDoc = await PDFDocument.load(originalBytes);
     const previewDoc = await PDFDocument.create();
     const pageCount = Math.min(2, srcDoc.getPageCount());
-    const pages = await previewDoc.copyPages(previewDoc === srcDoc ? srcDoc : srcDoc, [...Array(pageCount).keys()]);
+    const pages = await previewDoc.copyPages(srcDoc, [...Array(pageCount).keys()]);
     pages.forEach((p) => previewDoc.addPage(p));
     const previewBytes = await previewDoc.save();
     return new Blob([previewBytes], { type: "application/pdf" });
   };
 
-  // ── Reset ─────────────────────────────────────────────────
   const resetForm = () => {
     setDegreeId(""); setBranchId(""); setSemesterId(""); setSubjectId("");
     setBranches([]); setSemesters([]); setSubjects([]);
     setTitle(""); setSolutionType(""); setPrice("");
     setDescription(""); setIsPremium(false);
-    setPdfFile(null); setExistingPdfUrl("");
-    setExistingPreviewBlobName(""); // ← NEW
+    setPdfFile(null); setThumbnailFile(null);           // ← NEW
+    setExistingPdfUrl(""); setExistingPreviewBlobName("");
+    setExistingThumbnailBlobName("");                   // ← NEW
     setEditingId(null); setUploadProgress("");
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (thumbnailInputRef.current) thumbnailInputRef.current.value = ""; // ← NEW
   };
 
-  // ── Fetchers ──────────────────────────────────────────────
   const fetchDegrees = async () => {
     try {
       const res = await fetch("/api/degrees");
@@ -648,15 +658,11 @@ export default function SolutionForm() {
     } catch (e) { console.error(e); }
   };
 
-  // Initial load
   useEffect(() => { fetchDegrees(); fetchSolutions(); }, []);
-
-  // Cascading fetches
   useEffect(() => { fetchBranches(degreeId); }, [degreeId]);
   useEffect(() => { fetchSemesters(branchId); }, [branchId]);
   useEffect(() => { fetchSubjects(semesterId); }, [semesterId]);
 
-  // ── Dropdown change handlers ──
   const handleDegreeChange = (e) => {
     setDegreeId(e.target.value);
     setBranchId(""); setSemesterId(""); setSubjectId("");
@@ -674,7 +680,7 @@ export default function SolutionForm() {
     setSubjectId("");
   };
 
-  // ── Drag & Drop handlers ──────────────────────────────────
+  // PDF drag & drop
   const handleDragOver = (e) => e.preventDefault();
 
   const handleDrop = (e) => {
@@ -694,7 +700,16 @@ export default function SolutionForm() {
     setPdfFile(file);
   };
 
-  // ── Submit ────────────────────────────────────────────────
+  // ── NEW: Thumbnail image change handler ──
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { alert("Sirf image file allowed hai (JPG, PNG, WebP)"); return; }
+    if (file.size > 5 * 1024 * 1024) { alert("Image 5MB se badi nahi honi chahiye"); return; }
+    setThumbnailFile(file);
+  };
+
+  // ── Submit ──
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!degreeId || !branchId || !semesterId || !subjectId) {
@@ -713,9 +728,12 @@ export default function SolutionForm() {
     try {
       setLoading(true);
 
-      // New solution OR edit with new PDF → direct-to-Azure upload (original + preview)
+      let finalBlobName = existingPdfUrl;
+      let finalPreviewBlobName = existingPreviewBlobName;
+      let finalThumbnailBlobName = existingThumbnailBlobName; // ← NEW
+
+      // ── NEW PDF upload ──
       if (!editingId || pdfFile) {
-        // Step 1: asli PDF ke liye upload URL maango
         setUploadProgress("Upload URL generate ho rahi hai...");
         const urlRes = await fetch("/api/upload-url", {
           method: "POST",
@@ -725,7 +743,6 @@ export default function SolutionForm() {
         const urlData = await urlRes.json();
         if (!urlRes.ok || !urlData.success) throw new Error(urlData.error || "Upload URL nahi mili");
 
-        // Step 1b: preview PDF ke liye alag upload URL maango
         const previewUrlRes = await fetch("/api/upload-url", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -734,36 +751,69 @@ export default function SolutionForm() {
         const previewUrlData = await previewUrlRes.json();
         if (!previewUrlRes.ok || !previewUrlData.success) throw new Error("Preview upload URL nahi mili");
 
-        // Step 2: browser mein hi 2-page preview banao
-        setUploadProgress("Preview PDF (pehle 2 page) ban rahi hai...");
+        setUploadProgress("Preview PDF ban rahi hai...");
         const previewBlob = await generatePreviewPdf(pdfFile);
 
-        // Step 3: asli PDF seedha Azure par upload karo
-        setUploadProgress("PDF Azure par directly upload ho rahi hai...");
+        setUploadProgress("PDF Azure par upload ho rahi hai...");
         const azureRes = await fetch(urlData.uploadUrl, {
           method: "PUT",
           headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": "application/pdf" },
           body: pdfFile,
         });
-        if (!azureRes.ok) throw new Error("Azure upload fail ho gaya. Network ya CORS check karo.");
+        if (!azureRes.ok) throw new Error("Azure PDF upload fail. Network ya CORS check karo.");
 
-        // Step 4: preview PDF bhi Azure par upload karo
         setUploadProgress("Preview Azure par upload ho rahi hai...");
         const previewAzureRes = await fetch(previewUrlData.uploadUrl, {
           method: "PUT",
           headers: { "x-ms-blob-type": "BlockBlob", "Content-Type": "application/pdf" },
           body: previewBlob,
         });
-        if (!previewAzureRes.ok) throw new Error("Preview upload fail ho gaya.");
+        if (!previewAzureRes.ok) throw new Error("Preview upload fail.");
 
-        // Step 5: dono blob names DB mein save karo
-        setUploadProgress("Details save ho rahi hain...");
+        finalBlobName = urlData.blobName;
+        finalPreviewBlobName = previewUrlData.blobName;
+      }
+
+      // ── NEW: Thumbnail upload (agar naya image select kiya) ──
+      if (thumbnailFile) {
+        setUploadProgress("Thumbnail upload URL le raha hai...");
+        const thumbUrlRes = await fetch("/api/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: `thumb-${thumbnailFile.name}`,
+            contentType: thumbnailFile.type,
+          }),
+        });
+        const thumbUrlData = await thumbUrlRes.json();
+        if (!thumbUrlRes.ok || !thumbUrlData.success) throw new Error("Thumbnail upload URL nahi mili");
+
+        setUploadProgress("Thumbnail Azure par upload ho rahi hai...");
+        const thumbAzureRes = await fetch(thumbUrlData.uploadUrl, {
+          method: "PUT",
+          headers: {
+            "x-ms-blob-type": "BlockBlob",
+            "Content-Type": thumbnailFile.type,
+          },
+          body: thumbnailFile,
+        });
+        if (!thumbAzureRes.ok) throw new Error("Thumbnail upload fail.");
+
+        finalThumbnailBlobName = thumbUrlData.blobName;
+      }
+
+      // ── Save to DB ──
+      setUploadProgress("Details save ho rahi hain...");
+
+      if (!editingId || pdfFile) {
+        // New solution ya new PDF wala edit — /api/upload use karo
         const res = await fetch("/api/upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            blobName: urlData.blobName,
-            previewBlobName: previewUrlData.blobName,
+            blobName: finalBlobName,
+            previewBlobName: finalPreviewBlobName,
+            thumbnailBlobName: finalThumbnailBlobName,   // ← NEW
             subject_id: subjectId,
             solution_type: solutionType,
             price,
@@ -775,30 +825,30 @@ export default function SolutionForm() {
         });
         const result = await res.json();
         if (!res.ok || !result.success) throw new Error(result.error || "Save failed");
-
-        setUploadProgress("✅ Upload ho gaya!");
-        alert(editingId ? "Solution update ho gaya!" : "Solution add ho gaya!");
-        resetForm();
-        fetchSolutions();
-        return;
+      } else {
+        // Same PDF, sirf metadata update
+        const res = await fetch("/api/solutions", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editingId,
+            subject_id: subjectId,
+            title,
+            solution_type: solutionType,
+            pdf_url: finalBlobName,
+            preview_blob_name: finalPreviewBlobName,
+            thumbnail_blob_name: finalThumbnailBlobName,  // ← NEW
+            description,
+            price: parseFloat(price),
+            is_premium: isPremium ? 1 : 0,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Something went wrong");
       }
 
-      // Edit with same PDF → only update metadata (preview bhi same rahega)
-      setUploadProgress("Updating...");
-      const res = await fetch("/api/solutions", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editingId, subject_id: subjectId, title,
-          solution_type: solutionType, pdf_url: existingPdfUrl,
-          preview_blob_name: existingPreviewBlobName,
-          description, price: parseFloat(price),
-          is_premium: isPremium ? 1 : 0,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Something went wrong");
-      alert(data.message);
+      setUploadProgress("✅ Ho gaya!");
+      alert(editingId ? "Solution update ho gaya!" : "Solution add ho gaya!");
       resetForm();
       fetchSolutions();
 
@@ -811,25 +861,25 @@ export default function SolutionForm() {
     }
   };
 
-  // ── Edit — prefill the whole chain in one shot ──────────────
   const handleEdit = (solution) => {
     setEditingId(solution.id);
-
     setDegreeId(solution.degree_id ? solution.degree_id.toString() : "");
     setBranchId(solution.branch_id ? solution.branch_id.toString() : "");
     setSemesterId(solution.semester_id ? solution.semester_id.toString() : "");
     setSubjectId(solution.subject_id ? solution.subject_id.toString() : "");
-
     setTitle(solution.title);
     setSolutionType(solution.solution_type);
     setPrice(solution.price ? solution.price.toString() : "");
     setDescription(solution.description || "");
     setIsPremium(solution.is_premium === 1 || solution.is_premium === true);
     setExistingPdfUrl(solution.file_url || solution.pdf_url || "");
-    setExistingPreviewBlobName(solution.preview_blob_name || ""); // ← NEW
+    setExistingPreviewBlobName(solution.preview_blob_name || "");
+    setExistingThumbnailBlobName(solution.thumbnail_blob_name || ""); // ← NEW
     setPdfFile(null);
+    setThumbnailFile(null);  // ← NEW
     setUploadProgress("");
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (thumbnailInputRef.current) thumbnailInputRef.current.value = ""; // ← NEW
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -846,28 +896,20 @@ export default function SolutionForm() {
     }
   };
 
-  // ── Drop zone display logic ───────────────────────────────
   const renderDropZone = () => {
     if (pdfFile) return (
       <div>
         <p className="font-semibold text-green-700">✅ {pdfFile.name}</p>
         <p className="text-xs text-gray-500 mt-1">{(pdfFile.size / 1024 / 1024).toFixed(2)} MB</p>
         <p className="text-xs text-blue-500 mt-1">Pehle 2 page ka preview automatic ban jayega</p>
-        <button
-          type="button"
+        <button type="button"
           onClick={(e) => { e.stopPropagation(); setPdfFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-          className="text-xs text-red-500 mt-2 underline"
-        >
-          Remove
-        </button>
+          className="text-xs text-red-500 mt-2 underline">Remove</button>
       </div>
     );
     if (editingId && existingPdfUrl) return (
       <div>
         <p className="text-sm text-gray-600">📄 Current PDF saved hai</p>
-        <p className="text-xs text-gray-400 mt-1 truncate max-w-xs mx-auto">
-          {existingPdfUrl.split("/").pop().slice(0, 50)}
-        </p>
         <p className="text-xs text-blue-500 mt-2">Click karo ya drag karo naya PDF replace karne ke liye</p>
       </div>
     );
@@ -891,28 +933,22 @@ export default function SolutionForm() {
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6 mb-8">
 
+          {/* Course details */}
           <div className="rounded-2xl border border-gray-200 p-4">
-            <p className="text-xs font-bold tracking-wide text-gray-400 uppercase mb-3">
-              Course details
-            </p>
+            <p className="text-xs font-bold tracking-wide text-gray-400 uppercase mb-3">Course details</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <select value={degreeId} onChange={handleDegreeChange} className={selectClass}>
                 <option value="">Select degree *</option>
                 {degrees.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
-
               <select value={branchId} onChange={handleBranchChange} disabled={!degreeId} className={selectClass}>
                 <option value="">{degreeId ? "Select branch *" : "Pehle degree select karo"}</option>
                 {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
-
               <select value={semesterId} onChange={handleSemesterChange} disabled={!branchId} className={selectClass}>
                 <option value="">{branchId ? "Select semester *" : "Pehle branch select karo"}</option>
-                {semesters.map((s) => (
-                  <option key={s.id} value={s.id}>Semester {s.semester_number}</option>
-                ))}
+                {semesters.map((s) => <option key={s.id} value={s.id}>Semester {s.semester_number}</option>)}
               </select>
-
               <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} disabled={!semesterId} className={selectClass}>
                 <option value="">{semesterId ? "Select subject *" : "Pehle semester select karo"}</option>
                 {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -920,33 +956,22 @@ export default function SolutionForm() {
             </div>
           </div>
 
+          {/* Solution details */}
           <div className="rounded-2xl border border-gray-200 p-4 space-y-3">
-            <p className="text-xs font-bold tracking-wide text-gray-400 uppercase mb-1">
-              Solution details
-            </p>
-
+            <p className="text-xs font-bold tracking-wide text-gray-400 uppercase mb-1">Solution details</p>
             <Input placeholder="Solution title *" value={title}
               onChange={(e) => setTitle(e.target.value)} className="h-12" />
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <select value={solutionType} onChange={(e) => setSolutionType(e.target.value)} className={selectClass}>
                 <option value="">Select solution type *</option>
-                {SOLUTION_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
+                {SOLUTION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
-
               <Input placeholder="Price (₹) *" type="number" min="0"
                 value={price} onChange={(e) => setPrice(e.target.value)} className="h-12" />
             </div>
-
-            <textarea
-              placeholder="Description (optional)"
-              value={description}
+            <textarea placeholder="Description (optional)" value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full min-h-20 border rounded-lg p-3 text-sm resize-none"
-            />
-
+              className="w-full min-h-20 border rounded-lg p-3 text-sm resize-none" />
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input type="checkbox" checked={isPremium}
                 onChange={(e) => setIsPremium(e.target.checked)} className="w-4 h-4" />
@@ -954,6 +979,7 @@ export default function SolutionForm() {
             </label>
           </div>
 
+          {/* PDF Upload */}
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">
               PDF file {editingId ? "(naya upload karo ya same rakho)" : "*"}
@@ -963,19 +989,81 @@ export default function SolutionForm() {
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               className="w-full border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors"
-              style={{
-                borderColor: pdfFile ? "#16a34a" : "#d1d5db",
-                background: pdfFile ? "#f0fdf4" : "#fafafa",
-              }}
+              style={{ borderColor: pdfFile ? "#16a34a" : "#d1d5db", background: pdfFile ? "#f0fdf4" : "#fafafa" }}
             >
               {renderDropZone()}
             </div>
+            <input ref={fileInputRef} type="file" accept=".pdf"
+              style={{ display: "none" }} onChange={handleFileChange} />
+          </div>
+
+          {/* ── NEW: Thumbnail Image Upload ── */}
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              Cover Image / Thumbnail
+              <span className="ml-2 text-xs font-normal text-gray-400">
+                (JPG, PNG, WebP · Max 5MB · Checkout page par dikhega)
+              </span>
+            </label>
+
+            <div
+              onClick={() => thumbnailInputRef.current?.click()}
+              className="w-full border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors hover:border-orange-400"
+              style={{
+                borderColor: thumbnailFile ? "#16a34a" : (existingThumbnailBlobName ? "#f97316" : "#d1d5db"),
+                background: thumbnailFile ? "#f0fdf4" : "#fafafa",
+              }}
+            >
+              {thumbnailFile ? (
+                <div>
+                  {/* Preview of selected image */}
+                  <img
+                    src={URL.createObjectURL(thumbnailFile)}
+                    alt="Thumbnail preview"
+                    className="w-32 h-32 object-cover rounded-lg mx-auto mb-2"
+                  />
+                  <p className="font-semibold text-green-700 text-sm">✅ {thumbnailFile.name}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {(thumbnailFile.size / 1024).toFixed(0)} KB
+                  </p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setThumbnailFile(null);
+                      if (thumbnailInputRef.current) thumbnailInputRef.current.value = "";
+                    }}
+                    className="text-xs text-red-500 mt-2 underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : existingThumbnailBlobName ? (
+                <div>
+                  {/* Existing thumbnail show karo */}
+                  <img
+                    src={`/api/thumbnail?id=${editingId}`}
+                    alt="Current thumbnail"
+                    className="w-32 h-32 object-cover rounded-lg mx-auto mb-2"
+                  />
+                  <p className="text-sm text-orange-600 font-medium">📷 Current thumbnail saved hai</p>
+                  <p className="text-xs text-blue-500 mt-1">Click karo naya image replace karne ke liye</p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-4xl mb-2">🖼️</p>
+                  <p className="text-gray-400 text-sm">Click karo cover image select karne ke liye</p>
+                  <p className="text-xs text-gray-300 mt-1">JPG · PNG · WebP · Max 5MB</p>
+                </div>
+              )}
+            </div>
+
             <input
-              ref={fileInputRef}
+              ref={thumbnailInputRef}
               type="file"
-              accept=".pdf"
+              accept="image/jpeg,image/png,image/webp"
               style={{ display: "none" }}
-              onChange={handleFileChange}
+              onChange={handleThumbnailChange}
             />
           </div>
 
@@ -998,6 +1086,7 @@ export default function SolutionForm() {
           </div>
         </form>
 
+        {/* Solutions Table */}
         <div className="rounded-2xl border overflow-hidden">
           <div className="bg-[#142647] px-4 py-3 flex items-center justify-between">
             <h3 className="text-white font-semibold">Solution list</h3>
@@ -1008,6 +1097,7 @@ export default function SolutionForm() {
               <TableHeader>
                 <TableRow className="bg-slate-100">
                   <TableHead className="font-bold">#</TableHead>
+                  <TableHead className="font-bold">Thumb</TableHead>
                   <TableHead className="font-bold">Subject</TableHead>
                   <TableHead className="font-bold">Title</TableHead>
                   <TableHead className="font-bold">Type</TableHead>
@@ -1019,13 +1109,29 @@ export default function SolutionForm() {
               <TableBody>
                 {solutions.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-10 text-gray-400">
+                    <TableCell colSpan={8} className="text-center py-10 text-gray-400">
                       No solutions found. Add one above.
                     </TableCell>
                   </TableRow>
                 ) : solutions.map((s, i) => (
                   <TableRow key={s.id} className={editingId === s.id ? "bg-orange-50" : ""}>
                     <TableCell>{i + 1}</TableCell>
+
+                    {/* Thumbnail preview in table */}
+                    <TableCell>
+                      {s.thumbnail_blob_name ? (
+                        <img
+                          src={`/api/thumbnail?id=${s.id}`}
+                          alt="thumb"
+                          className="w-12 h-12 object-cover rounded-lg border"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg border bg-gray-100 flex items-center justify-center text-gray-300 text-xs">
+                          No img
+                        </div>
+                      )}
+                    </TableCell>
+
                     <TableCell className="max-w-50">
                       <p className="truncate font-medium">{s.subject_name}</p>
                       <p className="text-xs text-gray-400 truncate">

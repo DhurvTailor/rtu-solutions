@@ -1,4 +1,6 @@
 
+
+
 // import { NextRequest, NextResponse } from "next/server";
 // import { getServerSession } from "next-auth";
 // import { authOptions } from "@/lib/authOptions";
@@ -13,6 +15,7 @@
 //     const body = await req.json();
 //     const {
 //       blobName,
+//       previewBlobName = null, // ← NEW
 //       subject_id: subjectId,
 //       solution_type: solutionType,
 //       price,
@@ -21,12 +24,14 @@
 //       is_premium: isPremium = "0",
 //       update_id: updateId = null,
 //     } = body;
+
 //     if (!blobName || !subjectId || !solutionType || !price || !title) {
 //       return NextResponse.json(
 //         { error: "Subject, Title, Type, Price aur PDF (blobName) sab chahiye" },
 //         { status: 400 }
 //       );
 //     }
+
 //     if (updateId) {
 //       await updateSolution(
 //         parseInt(updateId),
@@ -36,7 +41,8 @@
 //         blobName,
 //         description,
 //         parseInt(isPremium),
-//         parseInt(price)
+//         parseInt(price),
+//         previewBlobName
 //       );
 //     } else {
 //       await addSolution(
@@ -46,9 +52,11 @@
 //         blobName,
 //         description,
 //         parseInt(isPremium),
-//         parseInt(price)
+//         parseInt(price),
+//         previewBlobName
 //       );
 //     }
+
 //     return NextResponse.json({
 //       success: true,
 //       message: updateId ? "Solution update ho gaya!" : "Solution add ho gaya!",
@@ -56,12 +64,14 @@
 //     });
 //   } catch (error) {
 //     console.error("upload (metadata save) error:", error);
-//     return NextResponse.json(
-//       { success: false, error: String(error) },
-//       { status: 500 }
-//     );
+//     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
 //   }
 // }
+
+
+
+
+
 
 
 import { NextRequest, NextResponse } from "next/server";
@@ -74,11 +84,13 @@ export async function POST(req: NextRequest) {
   if (!session || (session.user as any).role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
   try {
     const body = await req.json();
     const {
       blobName,
-      previewBlobName = null, // ← NEW
+      previewBlobName = null,
+      thumbnailBlobName = null,   // ← NEW
       subject_id: subjectId,
       solution_type: solutionType,
       price,
@@ -90,7 +102,7 @@ export async function POST(req: NextRequest) {
 
     if (!blobName || !subjectId || !solutionType || !price || !title) {
       return NextResponse.json(
-        { error: "Subject, Title, Type, Price aur PDF (blobName) sab chahiye" },
+        { error: "Subject, Title, Type, Price aur PDF sab chahiye" },
         { status: 400 }
       );
     }
@@ -105,7 +117,8 @@ export async function POST(req: NextRequest) {
         description,
         parseInt(isPremium),
         parseInt(price),
-        previewBlobName
+        previewBlobName,
+        thumbnailBlobName   // ← NEW
       );
     } else {
       await addSolution(
@@ -116,7 +129,8 @@ export async function POST(req: NextRequest) {
         description,
         parseInt(isPremium),
         parseInt(price),
-        previewBlobName
+        previewBlobName,
+        thumbnailBlobName   // ← NEW
       );
     }
 
@@ -126,7 +140,7 @@ export async function POST(req: NextRequest) {
       blobName,
     });
   } catch (error) {
-    console.error("upload (metadata save) error:", error);
+    console.error("upload error:", error);
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
 }

@@ -35,15 +35,32 @@ export function generateBlobName(fileName: string): string {
 // ── Write-only SAS URL — frontend isi URL par directly PUT karega ──
 // Isse PDF Vercel server se hokar nahi guzarta, seedha Azure jaata hai,
 // isliye Vercel ki 4.5MB body limit yahan apply nahi hoti.
-export const getUploadSasUrl = async (blobName: string): Promise<string> => {
+// export const getUploadSasUrl = async (blobName: string): Promise<string> => {
+//   const containerClient = getContainerClient();
+//   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+//   const sasUrl = await blockBlobClient.generateSasUrl({
+//     permissions: BlobSASPermissions.parse("cw"), // create + write — naya blob upload karne ke liye
+//     expiresOn: new Date(new Date().valueOf() + 15 * 60 * 1000), // 15 min
+//   });
+//   return sasUrl;
+// };
+
+
+export const getUploadSasUrl = async (
+  blobName: string,
+  contentType: string = "application/pdf"  // ← NEW param
+): Promise<string> => {
   const containerClient = getContainerClient();
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
   const sasUrl = await blockBlobClient.generateSasUrl({
-    permissions: BlobSASPermissions.parse("cw"), // create + write — naya blob upload karne ke liye
-    expiresOn: new Date(new Date().valueOf() + 15 * 60 * 1000), // 15 min
+    permissions: BlobSASPermissions.parse("cw"),
+    expiresOn: new Date(new Date().valueOf() + 15 * 60 * 1000),
+    contentType: contentType,  // ← NEW
   });
   return sasUrl;
 };
+
+
 
 // ── Legacy server-side upload (ab use nahi ho raha, chhoti files ke liye fallback) ──
 export const uploadPDFToAzure = async (
@@ -114,6 +131,21 @@ async function generatePreviewBlob(originalPdfBytes: Buffer, blobName: string) {
 
 
 export const getPreviewURL = async (blobName: string): Promise<string> => {
+  const containerClient = getContainerClient();
+  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const sasUrl = await blockBlobClient.generateSasUrl({
+    permissions: BlobSASPermissions.parse("r"),
+    expiresOn: new Date(new Date().valueOf() + 60 * 60 * 1000), // 1 hour
+    contentDisposition: "inline",
+  });
+  return sasUrl;
+};
+
+
+
+
+// Thumbnail ke liye read-only SAS URL (1 hour valid, inline display)
+export const getThumbnailURL = async (blobName: string): Promise<string> => {
   const containerClient = getContainerClient();
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
   const sasUrl = await blockBlobClient.generateSasUrl({
