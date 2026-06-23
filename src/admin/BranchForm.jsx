@@ -66,49 +66,89 @@ export default function BranchForm() {
   // ==========================
   // Add Branch
   // ==========================
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
 
-    if (!degreeId || !branchName.trim()) {
-      alert("Please fill all fields");
-      return;
-    }
+  //   if (!degreeId || !branchName.trim()) {
+  //     alert("Please fill all fields");
+  //     return;
+  //   }
 
-    try {
-      setLoading(true);
+  //   try {
+  //     setLoading(true);
 
-      const res = await fetch("/api/branch", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          degree_id: degreeId,
-          name: branchName,
-        }),
-      });
+  //     const res = await fetch("/api/branch", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         degree_id: degreeId,
+  //         name: branchName,
+  //       }),
+  //     });
 
-      const data = await res.json();
+  //     const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message);
-      }
+  //     if (!res.ok) {
+  //       throw new Error(data.message);
+  //     }
 
-      alert(data.message);
+  //     alert(data.message);
 
-      setDegreeId("");
-      setBranchName("");
+  //     setDegreeId("");
+  //     setBranchName("");
 
-      fetchBranches();
-    } catch (error) {
-      console.log(error);
+  //     fetchBranches();
+  //   } catch (error) {
+  //     console.log(error);
 
-      alert(error.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     alert(error.message || "Something went wrong");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
+const handleEdit = async (branch) => {
+const newBranchName = prompt(
+"Enter new branch name:",
+branch.name
+);
+
+if (!newBranchName || !newBranchName.trim()) return;
+
+try {
+const res = await fetch("/api/branch", {
+method: "PUT",
+headers: {
+"Content-Type": "application/json",
+},
+body: JSON.stringify({
+id: branch.id,
+degree_id: branch.degree_id,
+name: newBranchName.trim(),
+}),
+});
+
+```
+const data = await res.json();
+
+if (!res.ok) {
+  throw new Error(
+    data.message || "Update failed"
+  );
+}
+
+alert(data.message);
+
+fetchBranches();
+```
+
+} catch (error) {
+console.error(error);
+alert(error.message);
+}
+};
   
   // ==========================
   // Edit Branch
@@ -289,15 +329,15 @@ export default function BranchForm() {
                     </TableCell>
 
                     <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleEdit(branch.id)
-                        }
-                      >
-                        Edit
-                      </Button>
+                     <Button
+variant="outline"
+size="sm"
+onClick={() => handleEdit(branch)}
+
+>
+
+Edit </Button>
+
                       <Button
                         variant="destructive"
                         size="sm"
