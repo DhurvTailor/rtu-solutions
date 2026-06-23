@@ -14,7 +14,7 @@ export default function Home() {
       <Youtubevideo />      
         <Testimonials />
       <Notes />
-    <StatsCounter />
+   
       <CgpaCalculator />
        <StatsCounter />
     </main>
