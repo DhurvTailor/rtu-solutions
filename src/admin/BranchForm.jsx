@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "../components/ui/card";
 
-import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 
 import {
@@ -21,27 +20,20 @@ import {
   TableRow,
 } from "../components/ui/table";
 
-export default function BranchForm() {
-  const [degrees, setDegrees] = useState([]);
+export default function SemesterForm() {
   const [branches, setBranches] = useState([]);
+  const [semesters, setSemesters] = useState([]);
 
-  const [degreeId, setDegreeId] = useState("");
-  const [branchName, setBranchName] = useState("");
+  const [branchId, setBranchId] = useState("");
+  const [semesterNumber, setSemesterNumber] = useState("");
 
   const [loading, setLoading] = useState(false);
 
-  // ==========================
-  // Fetch Degrees
-  // ==========================
-  const fetchDegrees = async () => {
-    try {
-      const res = await fetch("/api/degrees");
-      const data = await res.json();
-      setDegrees(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  // Edit state
+  const [editingId, setEditingId] = useState(null);
+  const [editBranchId, setEditBranchId] = useState("");
+  const [editSemesterNumber, setEditSemesterNumber] = useState("");
+  const [editLoading, setEditLoading] = useState(false);
 
   // ==========================
   // Fetch Branches
@@ -56,18 +48,31 @@ export default function BranchForm() {
     }
   };
 
+  // ==========================
+  // Fetch Semesters
+  // ==========================
+  const fetchSemesters = async () => {
+    try {
+      const res = await fetch("/api/semesters");
+      const data = await res.json();
+      setSemesters(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    fetchDegrees();
     fetchBranches();
+    fetchSemesters();
   }, []);
 
   // ==========================
-  // Add Branch
+  // Add Semester
   // ==========================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!degreeId || !branchName.trim()) {
+    if (!branchId || !semesterNumber) {
       alert("Please fill all fields");
       return;
     }
@@ -75,98 +80,110 @@ export default function BranchForm() {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/branch", {
+      const res = await fetch("/api/semesters", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          degree_id: degreeId,
-          name: branchName,
+          branch_id: branchId,
+          semester_number: semesterNumber,
         }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message);
-      }
+      if (!res.ok) throw new Error(data.message);
 
       alert(data.message);
 
-      setDegreeId("");
-      setBranchName("");
+      setBranchId("");
+      setSemesterNumber("");
 
-      fetchBranches();
+      fetchSemesters();
     } catch (error) {
       console.log(error);
-      alert(error.message || "Something went wrong");
+      alert(error.message);
     } finally {
       setLoading(false);
     }
   };
 
   // ==========================
-  // Edit Branch
+  // Edit - Row Open
   // ==========================
-  const handleEdit = async (branch) => {
-    const newBranchName = prompt(
-      "Enter new branch name:",
-      branch.name
-    );
+  const handleEditClick = (semester) => {
+    setEditingId(semester.id);
+    setEditBranchId(semester.branch_id);
+    setEditSemesterNumber(semester.semester_number);
+  };
 
-    if (!newBranchName || !newBranchName.trim()) return;
+  // ==========================
+  // Edit - Cancel
+  // ==========================
+  const handleEditCancel = () => {
+    setEditingId(null);
+    setEditBranchId("");
+    setEditSemesterNumber("");
+  };
+
+  // ==========================
+  // Edit - Save/Update
+  // ==========================
+  const handleEditSave = async (id) => {
+    if (!editBranchId || !editSemesterNumber) {
+      alert("Please fill all fields");
+      return;
+    }
 
     try {
-      const res = await fetch("/api/branch", {
+      setEditLoading(true);
+
+      const res = await fetch("/api/semesters", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: branch.id,
-          degree_id: branch.degree_id,
-          name: newBranchName.trim(),
+          id: id,
+          branch_id: editBranchId,
+          semester_number: editSemesterNumber,
         }),
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message || "Update failed");
-      }
+      if (!res.ok) throw new Error(data.message || "Update failed");
 
       alert(data.message);
-      fetchBranches();
+
+      setEditingId(null);
+      setEditBranchId("");
+      setEditSemesterNumber("");
+
+      fetchSemesters();
     } catch (error) {
       console.error(error);
       alert(error.message);
+    } finally {
+      setEditLoading(false);
     }
   };
 
   // ==========================
-  // Delete Branch
+  // Delete Semester
   // ==========================
   const handleDelete = async (id) => {
-    const confirmDelete = confirm(
-      "Are you sure you want to delete this branch?"
-    );
-
+    const confirmDelete = confirm("Delete this semester?");
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(`/api/branch?id=${id}`, {
+      const res = await fetch(`/api/semesters?id=${id}`, {
         method: "DELETE",
       });
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.message);
-      }
+      if (!res.ok) throw new Error(data.message);
 
       alert(data.message);
-      fetchBranches();
+      fetchSemesters();
     } catch (error) {
       console.log(error);
       alert(error.message);
@@ -177,49 +194,54 @@ export default function BranchForm() {
     <Card className="border-0 shadow-xl rounded-3xl overflow-hidden">
       <CardHeader className="bg-[#142647] text-white">
         <CardTitle className="text-2xl font-bold">
-          Branch Management
+          Semester Management
         </CardTitle>
-
         <p className="text-sm text-gray-300">
-          Add and manage branches
+          Add and manage semesters
         </p>
       </CardHeader>
 
       <CardContent className="p-6">
+
         {/* ==========================
-            FORM
+            ADD FORM
         ========================== */}
         <form
           onSubmit={handleSubmit}
           className="flex flex-col lg:flex-row gap-4 mb-8"
         >
           <select
-            value={degreeId}
-            onChange={(e) => setDegreeId(e.target.value)}
+            value={branchId}
+            onChange={(e) => setBranchId(e.target.value)}
             className="h-12 px-4 border rounded-lg w-full"
           >
-            <option value="">Select Degree</option>
-
-            {degrees.map((degree) => (
-              <option key={degree.id} value={degree.id}>
-                {degree.name}
+            <option value="">Select Branch</option>
+            {branches.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.name}
               </option>
             ))}
           </select>
 
-          <Input
-            placeholder="Enter Branch Name"
-            value={branchName}
-            onChange={(e) => setBranchName(e.target.value)}
-            className="h-12"
-          />
+          <select
+            value={semesterNumber}
+            onChange={(e) => setSemesterNumber(e.target.value)}
+            className="h-12 px-4 border rounded-lg w-full"
+          >
+            <option value="">Select Semester</option>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+              <option key={sem} value={sem}>
+                Semester {sem}
+              </option>
+            ))}
+          </select>
 
           <Button
             type="submit"
             disabled={loading}
             className="bg-[#ff6900] hover:bg-orange-600 text-white h-12 px-8"
           >
-            {loading ? "Adding..." : "Add Branch"}
+            {loading ? "Adding..." : "Add Semester"}
           </Button>
         </form>
 
@@ -229,7 +251,7 @@ export default function BranchForm() {
         <div className="rounded-2xl border overflow-hidden">
           <div className="bg-[#142647] px-4 py-3">
             <h3 className="text-white font-semibold">
-              Branch List
+              Semester List
             </h3>
           </div>
 
@@ -237,60 +259,123 @@ export default function BranchForm() {
             <TableHeader>
               <TableRow>
                 <TableHead>S.No</TableHead>
-                <TableHead>Degree</TableHead>
-                <TableHead>Branch Name</TableHead>
+                <TableHead>Branch</TableHead>
+                <TableHead>Semester</TableHead>
                 <TableHead>Created At</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
-              {branches.length > 0 ? (
-                branches.map((branch, index) => (
-                  <TableRow key={branch.id}>
+              {semesters.length > 0 ? (
+                semesters.map((semester, index) => (
+                  <TableRow key={semester.id}>
                     <TableCell>{index + 1}</TableCell>
 
-                    <TableCell>{branch.degree_name}</TableCell>
+                    {/* ==========================
+                        EDIT MODE - inline row
+                    ========================== */}
+                    {editingId === semester.id ? (
+                      <>
+                        <TableCell>
+                          <select
+                            value={editBranchId}
+                            onChange={(e) => setEditBranchId(e.target.value)}
+                            className="h-9 px-3 border rounded-lg w-full text-sm"
+                          >
+                            <option value="">Select Branch</option>
+                            {branches.map((branch) => (
+                              <option key={branch.id} value={branch.id}>
+                                {branch.name}
+                              </option>
+                            ))}
+                          </select>
+                        </TableCell>
 
-                    <TableCell>{branch.name}</TableCell>
+                        <TableCell>
+                          <select
+                            value={editSemesterNumber}
+                            onChange={(e) => setEditSemesterNumber(e.target.value)}
+                            className="h-9 px-3 border rounded-lg w-full text-sm"
+                          >
+                            <option value="">Select Semester</option>
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
+                              <option key={sem} value={sem}>
+                                Semester {sem}
+                              </option>
+                            ))}
+                          </select>
+                        </TableCell>
 
-                    <TableCell>
-                      {new Date(branch.created_at).toLocaleDateString()}
-                    </TableCell>
+                        <TableCell>—</TableCell>
 
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(branch)}
-                      >
-                        Edit
-                      </Button>
+                        <TableCell className="flex gap-2">
+                          <Button
+                            size="sm"
+                            disabled={editLoading}
+                            onClick={() => handleEditSave(semester.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            {editLoading ? "Saving..." : "Save"}
+                          </Button>
 
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(branch.id)}
-                        className="ml-2"
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleEditCancel}
+                          >
+                            Cancel
+                          </Button>
+                        </TableCell>
+                      </>
+                    ) : (
+                      /* ==========================
+                          NORMAL MODE
+                      ========================== */
+                      <>
+                        <TableCell>{semester.branch_name}</TableCell>
+
+                        <TableCell>
+                          Semester {semester.semester_number}
+                        </TableCell>
+
+                        <TableCell>
+                          {new Date(semester.created_at).toLocaleDateString()}
+                        </TableCell>
+
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditClick(semester)}
+                          >
+                            Edit
+                          </Button>
+
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(semester.id)}
+                            className="ml-2"
+                          >
+                            Delete
+                          </Button>
+                        </TableCell>
+                      </>
+                    )}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={5}
-                    className="text-center py-8"
-                  >
-                    No Branches Found
+                  <TableCell colSpan={5} className="text-center py-8">
+                    No Semesters Found
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
+
       </CardContent>
     </Card>
   );
