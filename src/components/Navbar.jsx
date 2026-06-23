@@ -37,10 +37,10 @@ export default function Navbar() {
             />
             <div>
               <h2 className="text-white font-bold text-xl">
-                RTU <span className="text-orange-500">Solutions</span>
+                RTU <span className="text-white">Solutions</span>
               </h2>
-              <p className="text-xs text-gray-300">
-                Notes • PYQ • Important Questions • Videos
+              <p className="text-xs text-gray-900">
+                Notes • PYQ • Imp Questions • Videos
               </p>
             </div>
           </Link>
@@ -51,7 +51,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="hover:text-orange-500 transition"
+                className="hover:text-black transition"
               >
                 {link.label}
               </Link>
@@ -60,9 +60,9 @@ export default function Navbar() {
 
           {/* Right Side */}
           <div className="flex items-center gap-4">
-            <button className="text-white text-lg hover:text-orange-500 transition">
+            {/* <button className="text-white text-lg hover:text- transition">
               <FaSearch />
-            </button>
+            </button> */}
 
             {/* Loading state */}
             {status === "loading" && (
@@ -73,7 +73,7 @@ export default function Navbar() {
             {status === "unauthenticated" && (
               <Link
                 href="/login"
-                className="border border-orange-500 px-5 py-2 rounded-lg text-white hover:bg-orange-500 transition text-sm font-medium"
+                className="bg-white border border-orange-500 px-5 py-2 rounded-lg text-orange-500 hover:text-black transition text-sm font-medium"
               >
                 Login
               </Link>

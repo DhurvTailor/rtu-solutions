@@ -16,6 +16,7 @@ export default function Home() {
       <Notes />
     <StatsCounter />
       <CgpaCalculator />
+       <StatsCounter />
     </main>
   );
   }

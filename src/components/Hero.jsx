@@ -41,7 +41,7 @@ export default function Hero() {
 
           <div className="text-center lg:text-left" >
 
-            <span className="inline-block bg-orange-500/10 border border-orange-500/30 text-orange-400 px-4 py-2 rounded-full text-sm mb-5">
+            <span className="inline-block bg-white border border-orange-500/30 text-orange-400 px-4 py-2 rounded-full text-sm mb-5">
               🎓 Your Success, Our Mission
             </span>
 
@@ -87,17 +87,21 @@ export default function Hero() {
 
             {/* Buttons */}
 
-            <div className="flex gap-4 mt-10">
+            <div className="flex gap-4 mt-8">
+
+             <button
+  onClick={() =>
+    document
+      .getElementById("notes-section")
+      ?.scrollIntoView({ behavior: "smooth" })
+  }
+  className="bg-orange-500 hover:bg-orange-600 text-white px-7 py-4 rounded-xl font-semibold transition"
+>
+  Explore Notes
+</button>
 
               <Link
-                href="/notes"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-7 py-4 rounded-xl font-semibold transition"
-              >
-                Explore Notes
-              </Link>
-
-              <Link
-                href="/videos"
+                href="https://www.youtube.com/@RTU-Solutions"
                 className="border border-white/20 hover:border-orange-500 text-white px-7 py-4 rounded-xl font-semibold transition"
               >
                 Watch Videos

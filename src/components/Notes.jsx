@@ -199,7 +199,7 @@ useEffect(() => {
   }
 
   return (
-    <section className="min-h-screen bg-gray-50">
+    <section id="notes-section" className="min-h-screen bg-gray-50">
       <div className="sticky top-0 z-30 bg-[#071A3D] shadow-md">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-3">

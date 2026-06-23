@@ -109,6 +109,47 @@ export default function BranchForm() {
     }
   };
 
+  
+  // ==========================
+  // Edit Branch
+  // ==========================
+  const handleEdit = async (id) => {
+    const newBranchName = prompt(
+      "Enter new branch name:"
+    );
+
+    if (!newBranchName) return;
+
+    try {
+      const res = await fetch(
+        `/api/branch?id=${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: newBranchName,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message);
+      }
+
+      alert(data.message);
+
+      fetchBranches();
+    } catch (error) {
+      console.log(error);
+
+      alert(error.message);
+    }
+  };
+
   // ==========================
   // Delete Branch
   // ==========================
@@ -249,14 +290,24 @@ export default function BranchForm() {
 
                     <TableCell>
                       <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleEdit(branch.id)
+                        }
+                      >
+                        Edit
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="sm"
                         onClick={() =>
                           handleDelete(branch.id)
                         }
+                        className="ml-2"
                       >
                         Delete
-                      </Button>
+                      </Button>   
                     </TableCell>
                   </TableRow>
                 ))
