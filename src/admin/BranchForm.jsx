@@ -37,7 +37,6 @@ export default function BranchForm() {
     try {
       const res = await fetch("/api/degrees");
       const data = await res.json();
-
       setDegrees(data);
     } catch (error) {
       console.log(error);
@@ -51,7 +50,6 @@ export default function BranchForm() {
     try {
       const res = await fetch("/api/branch");
       const data = await res.json();
-
       setBranches(data);
     } catch (error) {
       console.log(error);
@@ -66,113 +64,27 @@ export default function BranchForm() {
   // ==========================
   // Add Branch
   // ==========================
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  //   if (!degreeId || !branchName.trim()) {
-  //     alert("Please fill all fields");
-  //     return;
-  //   }
-
-  //   try {
-  //     setLoading(true);
-
-  //     const res = await fetch("/api/branch", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         degree_id: degreeId,
-  //         name: branchName,
-  //       }),
-  //     });
-
-  //     const data = await res.json();
-
-  //     if (!res.ok) {
-  //       throw new Error(data.message);
-  //     }
-
-  //     alert(data.message);
-
-  //     setDegreeId("");
-  //     setBranchName("");
-
-  //     fetchBranches();
-  //   } catch (error) {
-  //     console.log(error);
-
-  //     alert(error.message || "Something went wrong");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-const handleEdit = async (branch) => {
-const newBranchName = prompt(
-"Enter new branch name:",
-branch.name
-);
-
-if (!newBranchName || !newBranchName.trim()) return;
-
-try {
-const res = await fetch("/api/branch", {
-method: "PUT",
-headers: {
-"Content-Type": "application/json",
-},
-body: JSON.stringify({
-id: branch.id,
-degree_id: branch.degree_id,
-name: newBranchName.trim(),
-}),
-});
-
-```
-const data = await res.json();
-
-if (!res.ok) {
-  throw new Error(
-    data.message || "Update failed"
-  );
-}
-
-alert(data.message);
-
-fetchBranches();
-```
-
-} catch (error) {
-console.error(error);
-alert(error.message);
-}
-};
-  
-  // ==========================
-  // Edit Branch
-  // ==========================
-  const handleEdit = async (id) => {
-    const newBranchName = prompt(
-      "Enter new branch name:"
-    );
-
-    if (!newBranchName) return;
+    if (!degreeId || !branchName.trim()) {
+      alert("Please fill all fields");
+      return;
+    }
 
     try {
-      const res = await fetch(
-        `/api/branch?id=${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: newBranchName,
-          }),
-        }
-      );
+      setLoading(true);
+
+      const res = await fetch("/api/branch", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          degree_id: degreeId,
+          name: branchName,
+        }),
+      });
 
       const data = await res.json();
 
@@ -182,10 +94,52 @@ alert(error.message);
 
       alert(data.message);
 
+      setDegreeId("");
+      setBranchName("");
+
       fetchBranches();
     } catch (error) {
       console.log(error);
+      alert(error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // ==========================
+  // Edit Branch
+  // ==========================
+  const handleEdit = async (branch) => {
+    const newBranchName = prompt(
+      "Enter new branch name:",
+      branch.name
+    );
+
+    if (!newBranchName || !newBranchName.trim()) return;
+
+    try {
+      const res = await fetch("/api/branch", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: branch.id,
+          degree_id: branch.degree_id,
+          name: newBranchName.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Update failed");
+      }
+
+      alert(data.message);
+      fetchBranches();
+    } catch (error) {
+      console.error(error);
       alert(error.message);
     }
   };
@@ -201,12 +155,9 @@ alert(error.message);
     if (!confirmDelete) return;
 
     try {
-      const res = await fetch(
-        `/api/branch?id=${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const res = await fetch(`/api/branch?id=${id}`, {
+        method: "DELETE",
+      });
 
       const data = await res.json();
 
@@ -215,11 +166,9 @@ alert(error.message);
       }
 
       alert(data.message);
-
       fetchBranches();
     } catch (error) {
       console.log(error);
-
       alert(error.message);
     }
   };
@@ -246,20 +195,13 @@ alert(error.message);
         >
           <select
             value={degreeId}
-            onChange={(e) =>
-              setDegreeId(e.target.value)
-            }
+            onChange={(e) => setDegreeId(e.target.value)}
             className="h-12 px-4 border rounded-lg w-full"
           >
-            <option value="">
-              Select Degree
-            </option>
+            <option value="">Select Degree</option>
 
             {degrees.map((degree) => (
-              <option
-                key={degree.id}
-                value={degree.id}
-              >
+              <option key={degree.id} value={degree.id}>
                 {degree.name}
               </option>
             ))}
@@ -268,9 +210,7 @@ alert(error.message);
           <Input
             placeholder="Enter Branch Name"
             value={branchName}
-            onChange={(e) =>
-              setBranchName(e.target.value)
-            }
+            onChange={(e) => setBranchName(e.target.value)}
             className="h-12"
           />
 
@@ -279,9 +219,7 @@ alert(error.message);
             disabled={loading}
             className="bg-[#ff6900] hover:bg-orange-600 text-white h-12 px-8"
           >
-            {loading
-              ? "Adding..."
-              : "Add Branch"}
+            {loading ? "Adding..." : "Add Branch"}
           </Button>
         </form>
 
@@ -310,44 +248,33 @@ alert(error.message);
               {branches.length > 0 ? (
                 branches.map((branch, index) => (
                   <TableRow key={branch.id}>
+                    <TableCell>{index + 1}</TableCell>
+
+                    <TableCell>{branch.degree_name}</TableCell>
+
+                    <TableCell>{branch.name}</TableCell>
+
                     <TableCell>
-                      {index + 1}
+                      {new Date(branch.created_at).toLocaleDateString()}
                     </TableCell>
 
                     <TableCell>
-                      {branch.degree_name}
-                    </TableCell>
-
-                    <TableCell>
-                      {branch.name}
-                    </TableCell>
-
-                    <TableCell>
-                      {new Date(
-                        branch.created_at
-                      ).toLocaleDateString()}
-                    </TableCell>
-
-                    <TableCell>
-                     <Button
-variant="outline"
-size="sm"
-onClick={() => handleEdit(branch)}
-
->
-
-Edit </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(branch)}
+                      >
+                        Edit
+                      </Button>
 
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() =>
-                          handleDelete(branch.id)
-                        }
+                        onClick={() => handleDelete(branch.id)}
                         className="ml-2"
                       >
                         Delete
-                      </Button>   
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
