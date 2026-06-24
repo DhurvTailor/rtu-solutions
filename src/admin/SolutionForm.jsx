@@ -807,22 +807,45 @@ export default function SolutionForm() {
 
       if (!editingId || pdfFile) {
         // New solution ya new PDF wala edit — /api/upload use karo
+        // const res = await fetch("/api/upload", {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({
+        //     blobName: finalBlobName,
+        //     previewBlobName: finalPreviewBlobName,
+        //     thumbnailBlobName: finalThumbnailBlobName,   // ← NEW
+        //     subject_id: subjectId,
+        //     solution_type: solutionType,
+        //     price,
+        //     title,
+        //     description,
+        //     is_premium: isPremium ? "1" : "0",
+        //     update_id: editingId ? editingId.toString() : null,
+        //   }),
+        // });
+           
         const res = await fetch("/api/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            blobName: finalBlobName,
-            previewBlobName: finalPreviewBlobName,
-            thumbnailBlobName: finalThumbnailBlobName,   // ← NEW
-            subject_id: subjectId,
-            solution_type: solutionType,
-            price,
-            title,
-            description,
-            is_premium: isPremium ? "1" : "0",
-            update_id: editingId ? editingId.toString() : null,
-          }),
-        });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    blobName: finalBlobName,
+    previewBlobName: finalPreviewBlobName,
+    thumbnailBlobName: finalThumbnailBlobName,
+    // ── NEW: cleanup ke liye purane blob names bhejo ──
+    oldBlobName: editingId && pdfFile ? existingPdfUrl : null,
+    oldPreviewBlobName: editingId && pdfFile ? existingPreviewBlobName : null,
+    oldThumbnailBlobName: editingId && thumbnailFile ? existingThumbnailBlobName : null,
+    subject_id: subjectId,
+    solution_type: solutionType,
+    price,
+    title,
+    description,
+    is_premium: isPremium ? "1" : "0",
+    update_id: editingId ? editingId.toString() : null,
+  }),
+});
+
+
         const result = await res.json();
         if (!res.ok || !result.success) throw new Error(result.error || "Save failed");
       } else {
