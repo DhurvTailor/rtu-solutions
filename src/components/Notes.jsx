@@ -217,75 +217,243 @@ export default function Notes() {
     "h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm font-medium text-[#071A3D] outline-none transition focus:border-[#E8700A] focus:ring-2 focus:ring-[#E8700A]/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-300";
 
   return (
-    <section className="min-h-screen bg-gray-50">
+    // <section className="min-h-screen bg-gray-50">
+
+    //   {/* ── Top bar ── */}
+    //   <div className="sticky top-0 z-30 bg-[#071A3D] shadow-md">
+    //     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+    //       <div className="flex items-center justify-between gap-3">
+    //         <div>
+    //           <span className="text-[10px] font-semibold uppercase tracking-widest text-[#E8700A]">
+    //             RTU Solutions
+    //           </span>
+    //           <h1 className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-white">
+    //             Library <SiGoogledrive size={18} />
+    //           </h1>
+    //         </div>
+    //       </div>
+
+    //       {hasPath && (
+    //         <div className="mt-2 flex items-center gap-2 overflow-x-auto">
+    //           <div className="flex items-center gap-1.5 text-xs text-gray-300 whitespace-nowrap">
+    //             {selectedDegreeName && <span>{selectedDegreeName}</span>}
+    //             {selectedBranchName && (
+    //               <><span className="text-gray-500">/</span><span>{selectedBranchName}</span></>
+    //             )}
+    //             {selectedSemester && (
+    //               <><span className="text-gray-500">/</span>
+    //               <span>Sem {selectedSemester.semester_number || selectedSemester.name}</span></>
+    //             )}
+    //           </div>
+    //           <button
+    //             onClick={resetAll}
+    //             className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-white transition"
+    //           >
+    //             <FiX size={13} /> Reset
+    //           </button>
+    //         </div>
+    //       )}
+    //     </div>
+    //   </div>
+
+    //   <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 space-y-4">
+
+    //     {/* ── Filters ── */}
+    //     <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5">
+    //       <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+    //         <FiFilter size={12} /> Apna course chuno
+    //       </div>
+    //       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    //         <div>
+    //           <label className="block mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+    //             Degree
+    //           </label>
+    //           <select className={selectClass} value={degree} onChange={(e) => setDegree(e.target.value)}>
+    //             <option value="">Select degree</option>
+    //             {degrees.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+    //           </select>
+    //         </div>
+    //         <div>
+    //           <label className="block mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+    //             Branch
+    //           </label>
+    //           <select className={selectClass} value={branch} onChange={(e) => setBranch(e.target.value)} disabled={!degree}>
+    //             <option value="">Select branch</option>
+    //             {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+    //           </select>
+    //         </div>
+    //         <div>
+    //           <label className="block mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+    //             Semester
+    //           </label>
+    //           <select className={selectClass} value={semester} onChange={(e) => setSemester(e.target.value)} disabled={!branch}>
+    //             <option value="">Select semester</option>
+    //             {semesters.map((s) => (
+    //               <option key={s.id} value={s.id}>Semester {s.semester_number || s.name}</option>
+    //             ))}
+    //           </select>
+    //         </div>
+    //       </div>
+    //     </div>
+
+    //     {/* ── Subject pills ── */}
+    //     {semester && (
+    //       <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5">
+    //         <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
+    //           <FiBookOpen size={12} /> Subject chuno
+    //         </div>
+    //         {loadingSubjects ? (
+    //           <p className="text-gray-400 text-sm">Loading subjects...</p>
+    //         ) : subjects.length === 0 ? (
+    //           <p className="text-gray-400 text-sm">Is semester ke liye subjects nahi hain.</p>
+    //         ) : (
+    //           <div className="flex flex-wrap gap-2">
+    //             {subjects.map((sub) => {
+    //               const active = String(subject) === String(sub.id);
+    //               return (
+    //                 <button
+    //                   key={sub.id}
+    //                   onClick={() => setSubject(sub.id)}
+    //                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all border active:scale-95 ${
+    //                     active
+    //                       ? "bg-[#E8700A] text-white border-[#E8700A]"
+    //                       : "bg-white text-[#071A3D] border-gray-200 hover:border-[#E8700A]/40 hover:bg-orange-50"
+    //                   }`}
+    //                 >
+    //                   {sub.name}
+    //                 </button>
+    //               );
+    //             })}
+    //           </div>
+    //         )}
+    //       </div>
+    //     )}
+
+    //     {/* ── Search + Results ── */}
+    //     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+
+    //       {/* Search bar */}
+    //       <div className="px-4 sm:px-5 py-3 border-b border-gray-100 flex items-center gap-3">
+    //         <FiSearch size={16} className="text-gray-300 shrink-0" />
+    //         <input
+    //           type="text"
+    //           placeholder={subject ? "Title se search karo..." : "Pehle subject select karo"}
+    //           value={search}
+    //           onChange={(e) => setSearch(e.target.value)}
+    //           disabled={!subject}
+    //           className="flex-1 h-9 bg-transparent text-sm text-[#071A3D] placeholder-gray-300 outline-none disabled:cursor-not-allowed"
+    //         />
+    //         {filteredSolutions.length > 0 && (
+    //           <span className="text-xs text-gray-400 whitespace-nowrap shrink-0">
+    //             {filteredSolutions.length} item{filteredSolutions.length > 1 ? "s" : ""} mile
+    //           </span>
+    //         )}
+    //       </div>
+
+    //       {/* Content */}
+    //       {loadingSolutions ? (
+    //         <div className="py-16 text-center text-gray-400 text-sm">
+    //           Notes load ho rahe hain...
+    //         </div>
+
+    //       ) : filteredSolutions.length === 0 ? (
+    //         <div className="py-16 text-center px-6">
+    //           <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
+    //             <FiBookOpen size={20} className="text-[#E8700A]" />
+    //           </div>
+    //           <h4 className="text-base font-semibold text-[#071A3D]">
+    //             {subject ? "Koi notes nahi mile" : "Subject select karo"}
+    //           </h4>
+    //           <p className="text-gray-400 mt-1 text-sm">
+    //             {subject
+    //               ? "Is subject ke liye abhi koi notes upload nahi hue."
+    //               : "Notes dekhne ke liye upar se subject chuno."}
+    //           </p>
+    //         </div>
+
+    //       ) : (
+    //         <div className="p-4 sm:p-5">
+    //           {/* ── Product card grid ── */}
+    //           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    //             {filteredSolutions.map((sol) => (
+    //               <SolutionCard key={sol.id} sol={sol} />
+    //             ))}
+    //           </div>
+    //         </div>
+    //       )}
+    //     </div>
+
+    //   </div>
+    // </section>
+     <section className="min-h-screen bg-gray-100">
 
       {/* ── Top bar ── */}
-      <div className="sticky top-0 z-30 bg-[#071A3D] shadow-md">
+      <div className="sticky top-0 z-30 bg-[#071A3D] shadow-lg">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#E8700A]">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E8700A]">
                 RTU Solutions
               </span>
               <h1 className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-white">
-                Library <SiGoogledrive size={18} />
+                Study Library <SiGoogledrive size={18} className="text-[#E8700A]" />
               </h1>
             </div>
-          </div>
 
-          {hasPath && (
-            <div className="mt-2 flex items-center gap-2 overflow-x-auto">
-              <div className="flex items-center gap-1.5 text-xs text-gray-300 whitespace-nowrap">
-                {selectedDegreeName && <span>{selectedDegreeName}</span>}
-                {selectedBranchName && (
-                  <><span className="text-gray-500">/</span><span>{selectedBranchName}</span></>
-                )}
-                {selectedSemester && (
-                  <><span className="text-gray-500">/</span>
-                  <span>Sem {selectedSemester.semester_number || selectedSemester.name}</span></>
-                )}
-              </div>
+            {hasPath && (
               <button
                 onClick={resetAll}
-                className="ml-auto flex items-center gap-1 text-xs text-gray-400 hover:text-white transition"
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white border border-gray-600 hover:border-gray-400 px-3 py-1.5 rounded-lg transition"
               >
                 <FiX size={13} /> Reset
               </button>
+            )}
+          </div>
+
+          {hasPath && (
+            <div className="mt-2 flex items-center gap-1.5 overflow-x-auto text-xs text-gray-400 whitespace-nowrap">
+              <span className="text-gray-500">Path:</span>
+              {selectedDegreeName && <span className="text-gray-300">{selectedDegreeName}</span>}
+              {selectedBranchName && (
+                <><span className="text-gray-600">/</span>
+                <span className="text-gray-300">{selectedBranchName}</span></>
+              )}
+              {selectedSemester && (
+                <><span className="text-gray-600">/</span>
+                <span className="text-gray-300">
+                  Semester {selectedSemester.semester_number || selectedSemester.name}
+                </span></>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 space-y-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-4">
 
-        {/* ── Filters ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5">
-          <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
-            <FiFilter size={12} /> Apna course chuno
+        {/* ── Course filters ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-5">
+          <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500">
+            <FiFilter size={13} className="text-[#E8700A]" />
+            Select your course
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                Degree
-              </label>
+              <label className={labelClass}>Degree</label>
               <select className={selectClass} value={degree} onChange={(e) => setDegree(e.target.value)}>
                 <option value="">Select degree</option>
                 {degrees.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                Branch
-              </label>
+              <label className={labelClass}>Branch</label>
               <select className={selectClass} value={branch} onChange={(e) => setBranch(e.target.value)} disabled={!degree}>
                 <option value="">Select branch</option>
                 {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="block mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-gray-400">
-                Semester
-              </label>
+              <label className={labelClass}>Semester</label>
               <select className={selectClass} value={semester} onChange={(e) => setSemester(e.target.value)} disabled={!branch}>
                 <option value="">Select semester</option>
                 {semesters.map((s) => (
@@ -298,14 +466,15 @@ export default function Notes() {
 
         {/* ── Subject pills ── */}
         {semester && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5">
-            <div className="mb-3 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gray-400">
-              <FiBookOpen size={12} /> Subject chuno
+          <div className="bg-white rounded-2xl border border-gray-200 p-5">
+            <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500">
+              <FiBookOpen size={13} className="text-[#E8700A]" />
+              Select subject
             </div>
             {loadingSubjects ? (
-              <p className="text-gray-400 text-sm">Loading subjects...</p>
+              <p className="text-gray-500 text-sm">Loading subjects...</p>
             ) : subjects.length === 0 ? (
-              <p className="text-gray-400 text-sm">Is semester ke liye subjects nahi hain.</p>
+              <p className="text-gray-500 text-sm">No subjects found for this semester.</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {subjects.map((sub) => {
@@ -314,10 +483,10 @@ export default function Notes() {
                     <button
                       key={sub.id}
                       onClick={() => setSubject(sub.id)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all border active:scale-95 ${
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border active:scale-95 ${
                         active
-                          ? "bg-[#E8700A] text-white border-[#E8700A]"
-                          : "bg-white text-[#071A3D] border-gray-200 hover:border-[#E8700A]/40 hover:bg-orange-50"
+                          ? "bg-[#E8700A] text-white border-[#E8700A] shadow-sm"
+                          : "bg-gray-50 text-[#071A3D] border-gray-300 hover:border-[#E8700A] hover:bg-orange-50 hover:text-[#E8700A]"
                       }`}
                     >
                       {sub.name}
@@ -329,51 +498,50 @@ export default function Notes() {
           </div>
         )}
 
-        {/* ── Search + Results ── */}
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        {/* ── Search + Cards ── */}
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
 
-          {/* Search bar */}
-          <div className="px-4 sm:px-5 py-3 border-b border-gray-100 flex items-center gap-3">
-            <FiSearch size={16} className="text-gray-300 shrink-0" />
+          {/* Search */}
+          <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
+            <FiSearch size={16} className="text-gray-400 shrink-0" />
             <input
               type="text"
-              placeholder={subject ? "Title se search karo..." : "Pehle subject select karo"}
+              placeholder={subject ? "Search by title..." : "Select a subject first"}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               disabled={!subject}
-              className="flex-1 h-9 bg-transparent text-sm text-[#071A3D] placeholder-gray-300 outline-none disabled:cursor-not-allowed"
+              className="flex-1 bg-transparent text-sm font-medium text-[#071A3D] placeholder-gray-400 outline-none disabled:cursor-not-allowed"
             />
             {filteredSolutions.length > 0 && (
-              <span className="text-xs text-gray-400 whitespace-nowrap shrink-0">
-                {filteredSolutions.length} item{filteredSolutions.length > 1 ? "s" : ""} mile
+              <span className="text-xs font-semibold text-gray-500 whitespace-nowrap shrink-0 bg-gray-200 px-2.5 py-1 rounded-full">
+                {filteredSolutions.length} result{filteredSolutions.length > 1 ? "s" : ""}
               </span>
             )}
           </div>
 
-          {/* Content */}
+          {/* Results */}
           {loadingSolutions ? (
-            <div className="py-16 text-center text-gray-400 text-sm">
-              Notes load ho rahe hain...
+            <div className="py-20 text-center text-gray-400 text-sm">
+              Loading notes...
             </div>
 
           ) : filteredSolutions.length === 0 ? (
-            <div className="py-16 text-center px-6">
-              <div className="mx-auto mb-4 w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
-                <FiBookOpen size={20} className="text-[#E8700A]" />
+            <div className="py-20 text-center px-6">
+              <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center">
+                <FiBookOpen size={24} className="text-[#E8700A]" />
               </div>
-              <h4 className="text-base font-semibold text-[#071A3D]">
-                {subject ? "Koi notes nahi mile" : "Subject select karo"}
+              <h4 className="text-base font-bold text-[#071A3D]">
+                {subject ? "No notes found" : "Select a subject"}
               </h4>
-              <p className="text-gray-400 mt-1 text-sm">
+              <p className="text-gray-500 mt-1 text-sm">
                 {subject
-                  ? "Is subject ke liye abhi koi notes upload nahi hue."
-                  : "Notes dekhne ke liye upar se subject chuno."}
+                  ? "No notes have been uploaded for this subject yet."
+                  : "Choose a subject above to browse available notes."}
               </p>
             </div>
 
           ) : (
-            <div className="p-4 sm:p-5">
-              {/* ── Product card grid ── */}
+            <div className="p-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredSolutions.map((sol) => (
                   <SolutionCard key={sol.id} sol={sol} />
@@ -385,6 +553,7 @@ export default function Notes() {
 
       </div>
     </section>
+
   );
 }
 
