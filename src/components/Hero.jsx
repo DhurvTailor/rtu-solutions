@@ -14,24 +14,24 @@ export default function Hero() {
     {
       icon: <FaWhatsapp className="text-green-500" size={26} />,
     
-      link: "https://wa.me/1234567890"
+      link: "https://whatsapp.com/channel/0029Vb791ri6WaKwNqG93F1K"
     },
     {
       icon: <FaPhone className="text-blue-500" size={26} />,
      
-      link: "tel:+1234567890"
+      link: "tel:+9521634141"
     },
     {
       icon: <FaInstagram className="text-pink-500" size={26} />,
    
-      link: "https://instagram.com/rtu_solutions"
+      link: "https://www.instagram.com/rtu_solutions/"
     } 
 
   ]
 
 
   return (
-    <section className="bg-[#071A3D] h-[70vh] overflow-hidden">
+    <section className="bg-[#071A3D] md:h-[70vh]  sm:h-auto overflow-hidden">
 
       <div className="max-w-7xl mx-auto px-5 py-16">
 
@@ -39,7 +39,7 @@ export default function Hero() {
 
           {/* Left Side */}
 
-          <div className="text-center lg:text-left" >
+          <div className="text-center lg:text-left sm:text-center" >
 
             <span className="inline-block bg-white border border-orange-500/30 text-orange-400 px-4 py-2 rounded-full text-sm mb-5">
               🎓 Your Success, Our Mission
@@ -61,7 +61,7 @@ export default function Hero() {
 
             {/* Features */}
 
-            <div className="flex flex-wrap gap-5 mt-8 text-gray-200">
+            <div className="flex flex-wrap pl-5  lg:pl-0   gap-5 mt-8 text-gray-200">
 
               <div className="flex items-center gap-2">
                 <FaBookOpen className="text-orange-500" />
@@ -87,7 +87,7 @@ export default function Hero() {
 
             {/* Buttons */}
 
-            <div className="flex gap-4 mt-8">
+            <div className="flex  ml-5 lg:ml-0   gap-4 mt-8">
 
              <button
   onClick={() =>
@@ -121,7 +121,7 @@ export default function Hero() {
               width={400}
               height={400}
               priority
-              className="w-137.5 h-137.5 rounded-full object-contain"
+              className="lg:w-137.5 lg:h-137.5  rounded-full"
             />
 
           </div>

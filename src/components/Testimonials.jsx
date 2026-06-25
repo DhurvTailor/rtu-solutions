@@ -44,7 +44,7 @@ export default function Testimonials() {
     const total = comments.length;
     if (total === 0) return [];
     const indices = [];
-    for (let i = 0; i < Math.min(3, total); i++) {
+    for (let i = 0; i < Math.min(4, total); i++) {
       indices.push((current + i) % total);
     }
     return indices;
@@ -64,12 +64,12 @@ export default function Testimonials() {
             Real Students, Real Feedback
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-[#071A3D] mt-2">
-            Hamare Students Kya Kehte Hain
+           Students Youtube comments
           </h2>
           <div className="flex items-center justify-center gap-2 mt-3">
             <FaYoutube className="text-red-500" size={18} />
             <p className="text-gray-500 text-sm">
-              YouTube comments se liye hain
+           Rtu-solutions
             </p>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function Testimonials() {
         {/* Carousel */}
         <div className="relative">
           {/* Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {visible.map((idx, i) => {
               const c = comments[idx];
               return (

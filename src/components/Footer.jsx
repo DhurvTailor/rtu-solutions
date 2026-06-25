@@ -5,7 +5,7 @@ import {
   FaYoutube,
   FaInstagram,
   FaTelegram,
-  FaFacebook,
+  FaWhatsapp
 } from "react-icons/fa";
 
 export default function Footer() {
@@ -31,11 +31,11 @@ export default function Footer() {
 
             <div className="flex gap-4 mt-5 text-xl">
 
-              <a href="#">
+              <a href="https://youtube.com/@rtu-solutions?si=vnuaMxKH_-gFP4L5">
                 <FaYoutube />
               </a>
 
-              <a href="#">
+              <a href="https://www.instagram.com/rtu_solutions/">
                 <FaInstagram />
               </a>
 
@@ -43,8 +43,8 @@ export default function Footer() {
                 <FaTelegram />
               </a>
 
-              <a href="#">
-                <FaFacebook />
+              <a href="https://whatsapp.com/channel/0029Vb791ri6WaKwNqG93F1K">
+                <FaWhatsapp />
               </a>
 
             </div>

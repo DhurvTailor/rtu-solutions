@@ -65,6 +65,7 @@ const Youtubevideo = () => {
           <Swiper
             modules={[Autoplay, Pagination]}
             spaceBetween={25}
+          
             slidesPerView={1}
             autoplay={{
               delay: 3000,
@@ -81,7 +82,7 @@ const Youtubevideo = () => {
                 slidesPerView: 2,
               },
               1024: {
-                slidesPerView: 3,
+                slidesPerView: 4,
               },
             }}
           >
@@ -91,7 +92,7 @@ const Youtubevideo = () => {
                   onClick={() => setSelectedVideo(video.id.videoId)}
                   className="
                     group
-                    bg-white
+                    bg-[#f3f0f0]
                     rounded-3xl
                     overflow-hidden
                     shadow-lg
@@ -127,10 +128,11 @@ const Youtubevideo = () => {
                         opacity-0
                         group-hover:opacity-100
                         transition
+                      
                       "
                     >
                       <div
-                        className="
+                        className=" 
                           w-16
                           h-16
                           bg-red-600
@@ -146,7 +148,7 @@ const Youtubevideo = () => {
                     </div>
                   </div>
 
-                  <div className="p-5">
+                  <div className="p-5 ">
                     <h3
                       className="
                         text-lg
@@ -161,6 +163,9 @@ const Youtubevideo = () => {
                     <p className="text-gray-500 text-sm mt-3">
                       {video.snippet.channelTitle}
                     </p>
+ 
+                        
+
                   </div>
                 </div>
               </SwiperSlide>
@@ -176,12 +181,14 @@ const Youtubevideo = () => {
           className="
             fixed
             inset-0
-            bg-black/90
+            bg-[#e10000]
             z-999
             flex
             items-center
             justify-center
             p-4
+            
+            
           "
         >
           <button

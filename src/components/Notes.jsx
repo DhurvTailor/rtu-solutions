@@ -214,18 +214,16 @@ export default function Notes() {
     "block mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-500";
 
   return (
-    <section className="min-h-screen bg-gray-100">
+    <section id="notes-section" className="min-h-screen bg-gray-100">
 
       {/* ── Top bar ── */}
       <div className="sticky top-0 z-30 bg-[#071A3D] shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E8700A]">
-                RTU Solutions
-              </span>
-              <h1 className="flex items-center gap-2 text-lg sm:text-2xl font-bold text-white">
-                Study Library <SiGoogledrive size={18} className="text-[#E8700A]" />
+        <div className="max-w-6xl mx-auto text-center px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex  items-center text-center justify-between gap-3">
+            <div className=" justify-center text-center" >
+             
+              <h1 className="flex text-center gap-2 text-lg sm:text-2xl font-bold text-white">
+                <span>RTU Paper</span>Solutions<SiGoogledrive size={18} className="text-[#E8700A]"/>
               </h1>
             </div>
 
@@ -294,92 +292,103 @@ export default function Notes() {
         </div>
 
         {/* ── Subject pills ── */}
-        {semester && (
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500">
-              <FiBookOpen size={13} className="text-[#E8700A]" />
-              Select subject
-            </div>
-            {loadingSubjects ? (
-              <p className="text-gray-500 text-sm">Loading subjects...</p>
-            ) : subjects.length === 0 ? (
-              <p className="text-gray-500 text-sm">No subjects found for this semester.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {subjects.map((sub) => {
-                  const active = String(subject) === String(sub.id);
-                  return (
-                    <button
-                      key={sub.id}
-                      onClick={() => setSubject(sub.id)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all border active:scale-95 ${
-                        active
-                          ? "bg-[#E8700A] text-white border-[#E8700A] shadow-sm"
-                          : "bg-gray-50 text-[#071A3D] border-gray-300 hover:border-[#E8700A] hover:bg-orange-50 hover:text-[#E8700A]"
-                      }`}
-                    >
-                      {sub.name}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+  <div className="flex flex-col lg:flex-row gap-6 max-w-6xl w-full mx-auto">
 
-        {/* ── Search + Cards ── */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+  {/* Subject List */}
+  {semester && (
+    <div className="w-full lg:w-[320px] xl:w-[350px] bg-[#071A3D] rounded-2xl border border-gray-200 p-5">
+      <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-300">
+        <FiBookOpen size={13} className="text-[#E8700A]" />
+        Select Subject
+      </div>
 
-          {/* Search */}
-          <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
-            <FiSearch size={16} className="text-gray-400 shrink-0" />
-            <input
-              type="text"
-              placeholder={subject ? "Search by title..." : "Select a subject first"}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              disabled={!subject}
-              className="flex-1 bg-transparent text-sm font-medium text-[#071A3D] placeholder-gray-400 outline-none disabled:cursor-not-allowed"
-            />
-            {filteredSolutions.length > 0 && (
-              <span className="text-xs font-semibold text-gray-500 whitespace-nowrap shrink-0 bg-gray-200 px-2.5 py-1 rounded-full">
-                {filteredSolutions.length} result{filteredSolutions.length > 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
+      {loadingSubjects ? (
+        <p className="text-gray-300 text-sm">Loading subjects...</p>
+      ) : subjects.length === 0 ? (
+        <p className="text-gray-300 text-sm">
+          No subjects found for this semester.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {subjects.map((sub) => {
+            const active = String(subject) === String(sub.id);
 
-          {/* Results */}
-          {loadingSolutions ? (
-            <div className="py-20 text-center text-gray-400 text-sm">
-              Loading notes...
-            </div>
+            return (
+              <button
+                key={sub.id}
+                onClick={() => setSubject(sub.id)}
+                className={`w-full px-4 py-2 text-sm font-semibold rounded-lg border transition-all active:scale-95 ${
+                  active
+                    ? "bg-[#E8700A] text-white border-[#E8700A]"
+                    : "bg-white text-[#071A3D] border-gray-300 hover:border-[#E8700A] hover:bg-orange-50 hover:text-[#E8700A]"
+                }`}
+              >
+                {sub.name}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  )}
 
-          ) : filteredSolutions.length === 0 ? (
-            <div className="py-20 text-center px-6">
-              <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center">
-                <FiBookOpen size={24} className="text-[#E8700A]" />
-              </div>
-              <h4 className="text-base font-bold text-[#071A3D]">
-                {subject ? "No notes found" : "Select a subject"}
-              </h4>
-              <p className="text-gray-500 mt-1 text-sm">
-                {subject
-                  ? "No notes have been uploaded for this subject yet."
-                  : "Choose a subject above to browse available notes."}
-              </p>
-            </div>
+  {/* Search + Notes */}
+  <div className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden">
 
-          ) : (
-            <div className="p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredSolutions.map((sol) => (
-                  <SolutionCard key={sol.id} sol={sol} />
-                ))}
-              </div>
-            </div>
-          )}
+    {/* Search */}
+    <div className="px-5 py-3.5 border-b border-gray-200 flex items-center gap-3 bg-gray-50">
+      <FiSearch size={16} className="text-gray-400 shrink-0" />
+
+      <input
+        type="text"
+        placeholder={subject ? "Search by title..." : "Select a subject first"}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        disabled={!subject}
+        className="flex-1 bg-transparent text-sm font-medium text-[#071A3D] placeholder-gray-400 outline-none disabled:cursor-not-allowed"
+      />
+
+      {filteredSolutions.length > 0 && (
+        <span className="hidden sm:inline text-xs font-semibold text-gray-500 bg-gray-200 px-2.5 py-1 rounded-full">
+          {filteredSolutions.length} result
+          {filteredSolutions.length > 1 ? "s" : ""}
+        </span>
+      )}
+    </div>
+
+    {/* Results */}
+    {loadingSolutions ? (
+      <div className="py-20 text-center text-gray-400 text-sm">
+        Loading notes...
+      </div>
+    ) : filteredSolutions.length === 0 ? (
+      <div className="py-20 text-center px-6">
+        <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-orange-50 border border-orange-100 flex items-center justify-center">
+          <FiBookOpen size={24} className="text-[#E8700A]" />
         </div>
 
+        <h4 className="text-base font-bold text-[#071A3D]">
+          {subject ? "No notes found" : "Select a subject"}
+        </h4>
+
+        <p className="text-gray-500 mt-1 text-sm">
+          {subject
+            ? "No notes have been uploaded for this subject yet."
+            : "Choose a subject above to browse available notes."}
+        </p>
+      </div>
+    ) : (
+      <div className="p-5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filteredSolutions.map((sol) => (
+            <SolutionCard key={sol.id} sol={sol} />
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+
+</div>
       </div>
     </section>
   );
