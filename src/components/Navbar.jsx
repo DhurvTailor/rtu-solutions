@@ -40,7 +40,7 @@ export default function Navbar() {
                 RTU <span className="text-white">Solutions</span>
               </h2>
               <p className="text-xs text-gray-900">
-                Notes • PYQ • Imp Questions • Videos
+                Notes • PYQ • Videos
               </p>
             </div>
           </Link>
