@@ -31,7 +31,7 @@ function PurchaseCard({ item }) {
             style={{ minHeight: "90px" }}
           />
         ) : (
-          <div className="w-full h-full min-h-[90px] flex items-center justify-center">
+          <div className="w-full h-full min-h-22.5 flex items-center justify-center">
             <FaFilePdf size={24} className="text-gray-600" />
           </div>
         )}
