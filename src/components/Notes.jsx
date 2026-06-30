@@ -52,16 +52,38 @@ function TypeBadge({ type }) {
   );
 }
 
+
+function slugify(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
+}
+
 function SeePdfButton({ sol }) {
   return (
     <a
-      href={`/solutions/${sol.id}`}
+      href={`/solutions/${sol.id}-${slugify(sol.title)}`}
       className="flex-1 flex items-center justify-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 rounded-lg text-xs font-semibold transition-colors"
     >
       <FiEye size={12} /> Preview
     </a>
   );
 }
+
+
+// function SeePdfButton({ sol }) {
+//   return (
+//     <a
+//       href={`/solutions/${sol.id}`}
+//       className="flex-1 flex items-center justify-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-100 py-2 rounded-lg text-xs font-semibold transition-colors"
+//     >
+//       <FiEye size={12} /> Preview
+//     </a>
+//   );
+// }
 
 function ActionButton({ sol, isFree }) {
   // Premium PDF but trial available — FREE download

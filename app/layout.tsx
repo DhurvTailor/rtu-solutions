@@ -9,8 +9,28 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 
 export const metadata: Metadata = {
-  title: "RTU Solutions",
-  description: "RTU Notes, PYQ, Important Questions, Video Lectures and Study Resources",
+  metadataBase: new URL("https://rtu-solutions.vercel.app"),
+  title: {
+    default: "RTU Solutions | RTU Notes, PYQ & Study Material",
+    template: "%s | RTU Solutions",
+  },
+  description: "RTU Notes, PYQ Solutions, Important Questions aur Video Lectures - sabhi branches aur semesters ke liye. Free aur premium study material RTU students ke liye.",
+  keywords: "RTU notes, RTU PYQ, RTU solutions, Rajasthan Technical University, RTU study material, RTU important questions",
+  openGraph: {
+    title: "RTU Solutions | RTU Notes, PYQ & Study Material",
+    description: "RTU Notes, PYQ Solutions, Important Questions - sabhi branches ke liye",
+    url: "https://rtu-solutions.vercel.app",
+    siteName: "RTU Solutions",
+    locale: "en_IN",
+    type: "website",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  verification: {
+    google: "YAHAN_GOOGLE_SEARCH_CONSOLE_CODE_DAALO",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
