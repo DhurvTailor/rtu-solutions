@@ -350,7 +350,7 @@ export default function Notes() {
 
         <div className="flex flex-col lg:flex-row gap-6 max-w-6xl w-full mx-auto">
           {semester && (
-            <div className="w-full lg:w-[320px] xl:w-[350px] bg-[#071A3D] rounded-2xl border border-gray-200 p-5">
+            <div className="w-full lg:w-[320px] xl:w-87.5 bg-[#071A3D] rounded-2xl border border-gray-200 p-5">
               <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-300">
                 <FiBookOpen size={13} className="text-[#E8700A]" />
                 Select Subject
