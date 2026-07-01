@@ -53,14 +53,30 @@ function TypeBadge({ type }) {
 }
 
 
+// function slugify(text) {
+//   return text
+//     .toLowerCase()
+//     .replace(/[^\w\s-]/g, "")
+//     .replace(/\s+/g, "-")
+//     .replace(/-+/g, "-")
+//     .trim();
+// }
+
+
 function slugify(text) {
+  if (!text) return "";
   return text
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/[–—]/g, "-")
     .toLowerCase()
     .replace(/[^\w\s-]/g, "")
     .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
+    .replace(/-{2,}/g, "-")
+    .trim()
+    .replace(/^-|-$/g, "");
 }
+
+
 
 function SeePdfButton({ sol }) {
   return (

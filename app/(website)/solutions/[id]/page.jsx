@@ -99,12 +99,14 @@ import SolutionDetailClient from "./SolutionDetailClient";
 function slugify(text) {
   if (!text) return "";
   return text
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/[–—]/g, "-")
     .toLowerCase()
-    .replace(/[^\w\s-]/g, "")   // special chars hatao
-    .replace(/\s+/g, "-")        // spaces ko dash
-    .replace(/-{2,}/g, "-")      // double dash ko single dash
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-{2,}/g, "-")
     .trim()
-    .replace(/^-|-$/g, "");      // start/end ke dashes hatao
+    .replace(/^-|-$/g, "");
 }
 
 export async function generateMetadata({ params }) {
