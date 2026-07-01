@@ -308,15 +308,38 @@ export async function getSolutionsBySubject(subjectId) {
   return rows;
 }
 
+// export async function getSolutionById(id) {
+//   const [rows] = await db.query(
+//     `
+//     SELECT solutions.*, subjects.name AS subject_name
+//     FROM solutions
+//     JOIN subjects ON solutions.subject_id = subjects.id
+//     WHERE solutions.id = ?
+//     `,
+//     [id]
+//   );
+//   return rows[0];
+// }
+
+
 export async function getSolutionById(id) {
+  const numericId = parseInt(id, 10);
+  if (isNaN(numericId)) return null;
+
   const [rows] = await db.query(
-    `
-    SELECT solutions.*, subjects.name AS subject_name
+    `SELECT 
+      solutions.*,
+      subjects.name             AS subject_name,
+      semesters.semester_number AS semester_number,
+      branch.name               AS branch_name,
+      degrees.name              AS degree_name
     FROM solutions
-    JOIN subjects ON solutions.subject_id = subjects.id
-    WHERE solutions.id = ?
-    `,
-    [id]
+    JOIN subjects  ON solutions.subject_id = subjects.id
+    JOIN semesters ON subjects.semester_id = semesters.id
+    JOIN branch    ON semesters.branch_id  = branch.id
+    JOIN degrees   ON branch.degree_id     = degrees.id
+    WHERE solutions.id = ?`,
+    [numericId]
   );
-  return rows[0];
+  return rows[0] || null;
 }
