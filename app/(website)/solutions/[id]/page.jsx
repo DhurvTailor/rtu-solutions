@@ -92,19 +92,30 @@
 //   );
 // }
 
+"use client";
 import { getSolutionById } from "@/services/solutionService";
 import SolutionDetailClient from "./SolutionDetailClient";
 
+// ── slugify pehle define karo — dono functions use karte hain ──
+function slugify(text) {
+  if (!text) return "";
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")   // special chars hatao
+    .replace(/\s+/g, "-")        // spaces ko dash
+    .replace(/-{2,}/g, "-")      // double dash ko single dash
+    .trim()
+    .replace(/^-|-$/g, "");      // start/end ke dashes hatao
+}
+
 export async function generateMetadata({ params }) {
-  const idParam = params.id;
-  const numericId = idParam.split("-")[0]; // "34-basic-civil..." se "34" nikalo
+  const idParam = await params.id;
+  const numericId = String(idParam).split("-")[0];
 
   const solution = await getSolutionById(numericId);
 
   if (!solution) {
-    return {
-      title: "Solution Not Found | RTU Solutions",
-    };
+    return { title: "Solution Not Found | RTU Solutions" };
   }
 
   const title = `${solution.title} | RTU Solutions`;
@@ -130,9 +141,7 @@ export async function generateMetadata({ params }) {
       "RTU PYQ",
       `RTU semester ${solution.semester_number}`,
     ].filter(Boolean).join(", "),
-    alternates: {
-      canonical: canonicalUrl,
-    },
+    alternates: { canonical: canonicalUrl },
     openGraph: {
       title,
       description,
@@ -151,18 +160,10 @@ export async function generateMetadata({ params }) {
   };
 }
 
-function slugify(text) {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
-}
-
 export default async function SolutionPage({ params }) {
-  const idParam = params.id;
-  const numericId = idParam.split("-")[0];
+  const idParam = await params.id;
+  const numericId = String(idParam).split("-")[0];
+
   const solution = await getSolutionById(numericId);
 
   if (!solution) {
@@ -173,7 +174,6 @@ export default async function SolutionPage({ params }) {
     );
   }
 
-  // JSON-LD structured data — Google rich snippets ke liye
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
