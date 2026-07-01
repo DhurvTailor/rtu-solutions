@@ -29,7 +29,7 @@ async function getSolution(id) {
 }
 
 export async function generateMetadata({ params }) {
-  const idParam = params.id;
+  const { id: idParam } = await params;
   const numericId = parseInt(String(idParam).split("-")[0], 10);
   const solution = await getSolution(numericId);
 
@@ -71,7 +71,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function SolutionPage({ params }) {
-  const idParam = params.id;
+  const { id: idParam } = await params;
   const numericId = parseInt(String(idParam).split("-")[0], 10);
   const solution = await getSolution(numericId);
 
