@@ -92,7 +92,6 @@
 //   );
 // }
 
-"use client";
 import { getSolutionById } from "@/services/solutionService";
 import SolutionDetailClient from "./SolutionDetailClient";
 
