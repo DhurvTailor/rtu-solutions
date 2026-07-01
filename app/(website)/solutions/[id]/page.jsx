@@ -1,5 +1,3 @@
-
-import { getSolutionById } from "../../../../services/solutionService.js";
 import SolutionDetailClient from "./SolutionDetailClient";
 
 function slugify(text) {
@@ -15,11 +13,25 @@ function slugify(text) {
     .replace(/^-|-$/g, "");
 }
 
-export async function generateMetadata({ params }) {
-  const idParam = await params.id;
-  const numericId = String(idParam).split("-")[0];
+async function getSolution(id) {
+  try {
+    const res = await fetch(
+      `https://rtu-solutions.vercel.app/api/solutions?id=${id}`,
+      { cache: "no-store" }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data || !data.id) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
 
-  const solution = await getSolutionById(numericId);
+export async function generateMetadata({ params }) {
+  const idParam = params.id;
+  const numericId = parseInt(String(idParam).split("-")[0], 10);
+  const solution = await getSolution(numericId);
 
   if (!solution) {
     return { title: "Solution Not Found | RTU Solutions" };
@@ -28,7 +40,7 @@ export async function generateMetadata({ params }) {
   const title = `${solution.title} | RTU Solutions`;
   const description = solution.description
     ? solution.description.slice(0, 155)
-    : `${solution.title} - RTU ${solution.subject_name || ""} notes, free download. RTU Solutions par best quality study material.`;
+    : `${solution.title} - RTU notes. RTU Solutions par best study material.`;
 
   const imageUrl = solution.thumbnail_blob_name
     ? `https://rtu-solutions.vercel.app/api/thumbnail?id=${solution.id}`
@@ -39,15 +51,6 @@ export async function generateMetadata({ params }) {
   return {
     title,
     description,
-    keywords: [
-      "RTU",
-      solution.subject_name,
-      solution.branch_name,
-      solution.solution_type,
-      "RTU notes",
-      "RTU PYQ",
-      `RTU semester ${solution.semester_number}`,
-    ].filter(Boolean).join(", "),
     alternates: { canonical: canonicalUrl },
     openGraph: {
       title,
@@ -68,15 +71,14 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function SolutionPage({ params }) {
-  const idParam = await params.id;
-  const numericId = String(idParam).split("-")[0];
-
-  const solution = await getSolutionById(numericId);
+  const idParam = params.id;
+  const numericId = parseInt(String(idParam).split("-")[0], 10);
+  const solution = await getSolution(numericId);
 
   if (!solution) {
     return (
       <main className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">Solution nahi mila</p>
+        <p className="text-red-500 text-sm">Solution nahi mila (id: {numericId})</p>
       </main>
     );
   }
@@ -89,10 +91,7 @@ export default async function SolutionPage({ params }) {
     image: solution.thumbnail_blob_name
       ? `https://rtu-solutions.vercel.app/api/thumbnail?id=${solution.id}`
       : "https://rtu-solutions.vercel.app/logo.jpg",
-    brand: {
-      "@type": "Brand",
-      name: "RTU Solutions",
-    },
+    brand: { "@type": "Brand", name: "RTU Solutions" },
     offers: {
       "@type": "Offer",
       price: solution.is_premium ? parseFloat(solution.price) : 0,
