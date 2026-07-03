@@ -9,7 +9,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://rtu-solutions.vercel.app"),
+  metadataBase: new URL("https://www.rtu-solutions.me"),
   title: {
     default: "RTU Solutions | RTU Notes, PYQ & Study Material",
     template: "%s | RTU Solutions",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "RTU Solutions | RTU Notes, PYQ & Study Material",
     description: "RTU Notes, PYQ Solutions, Important Questions - sabhi branches ke liye",
-    url: "https://rtu-solutions.vercel.app",
+    url: "https://www.rtu-solutions.me",
     siteName: "RTU Solutions",
     locale: "en_IN",
     type: "website",

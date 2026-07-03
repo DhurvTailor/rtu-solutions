@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin", "/api/", "/checkout", "/profile"],
     },
-    sitemap: "https://rtu-solutions.vercel.app/sitemap.xml",
+    sitemap: "https://www.rtu-solutions.me/sitemap.xml",
   };
 }

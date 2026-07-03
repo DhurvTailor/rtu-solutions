@@ -16,7 +16,7 @@ function slugify(text) {
 async function getSolution(id) {
   try {
     const res = await fetch(
-      `https://rtu-solutions.vercel.app/api/solutions?id=${id}`,
+      `https://www.rtu-solutions.me/api/solutions?id=${id}`,
       { cache: "no-store" }
     );
     if (!res.ok) return null;
@@ -43,10 +43,10 @@ export async function generateMetadata({ params }) {
     : `${solution.title} - RTU notes. RTU Solutions par best study material.`;
 
   const imageUrl = solution.thumbnail_blob_name
-    ? `https://rtu-solutions.vercel.app/api/thumbnail?id=${solution.id}`
-    : "https://rtu-solutions.vercel.app/logo.jpg";
+    ? `/api/thumbnail?id=${solution.id}`
+    : "https://www.rtu-solutions.me/logo.jpg";
 
-  const canonicalUrl = `https://rtu-solutions.vercel.app/solutions/${solution.id}-${slugify(solution.title)}`;
+  const canonicalUrl = `https://www.rtu-solutions.me/solutions/${solution.id}-${slugify(solution.title)}`;
 
   return {
     title,
@@ -89,15 +89,15 @@ export default async function SolutionPage({ params }) {
     name: solution.title,
     description: solution.description || solution.title,
     image: solution.thumbnail_blob_name
-      ? `https://rtu-solutions.vercel.app/api/thumbnail?id=${solution.id}`
-      : "https://rtu-solutions.vercel.app/logo.jpg",
+      ? `https://www.rtu-solutions.me/api/thumbnail?id=${solution.id}`
+      : "https://www.rtu-solutions.me/logo.jpg",
     brand: { "@type": "Brand", name: "RTU Solutions" },
     offers: {
       "@type": "Offer",
       price: solution.is_premium ? parseFloat(solution.price) : 0,
       priceCurrency: "INR",
       availability: "https://schema.org/InStock",
-      url: `https://rtu-solutions.vercel.app/solutions/${solution.id}-${slugify(solution.title)}`,
+      url: `https://www.rtu-solutions.me/solutions/${solution.id}-${slugify(solution.title)}`,
     },
   };
 

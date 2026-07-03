@@ -19,7 +19,7 @@ export default function SolutionDetailClient({ solution }) {
   const [shareOpen, setShareOpen] = useState(false);
 
   const price = parseFloat(solution.price || 0);
-  const shareUrl = `https://rtu-solutions.vercel.app/solutions/${solution.id}-${slugify(solution.title)}`;
+  const shareUrl = `https://www.rtu-solutions.me/solutions/${solution.id}-${slugify(solution.title)}`;
 
   const handleCopyLink = async () => {
     try {
