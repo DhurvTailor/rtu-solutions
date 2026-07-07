@@ -10,6 +10,7 @@ export default function Home() {
   return (
     <main>
       <Hero />
+          <Notes />
 
       <Youtubevideo />      
         <Testimonials />
