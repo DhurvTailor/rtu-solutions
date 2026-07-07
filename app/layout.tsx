@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   verification: {
-    google: "YAHAN_GOOGLE_SEARCH_CONSOLE_CODE_DAALO",
+    google: "OpInaWck_WbQs1THL2bXjm6RsNLvbVPaGhYqmJd14p4",
   },
 };
 
