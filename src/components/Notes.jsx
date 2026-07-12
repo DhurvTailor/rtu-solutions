@@ -20,37 +20,37 @@ function truncateDesc(text, limit = 80) {
   return text.length > limit ? text.slice(0, limit).trimEnd() + "..." : text;
 }
 
-function StatusBadge({ sol, isFree }) {
-  if (sol.is_premium && isFree) {
-    return (
-      <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-400 text-green-950 border border-green-500">
-        <FaGift size={8} />
-        FREE Trial
-      </span>
-    );
-  }
-  if (sol.is_premium) {
-    return (
-      <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-400 text-amber-950 border border-amber-500">
-        <FiLock size={8} />
-        Premium · ₹{parseFloat(sol.price || 0).toFixed(0)}
-      </span>
-    );
-  }
-  return (
-    <span className="absolute top-2 left-2 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-400 text-emerald-950 border border-emerald-500">
-      Free
-    </span>
-  );
-}
+// function StatusBadge({ sol, isFree }) {
+//   if (sol.is_premium && isFree) {
+//     return (
+//       <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-400 text-green-950 border border-green-500">
+//         <FaGift size={8} />
+//         FREE Trial
+//       </span>
+//     );
+//   }
+//   if (sol.is_premium) {
+//     return (
+//       <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-400 text-amber-950 border border-amber-500">
+//         <FiLock size={8} />
+//         Premium · ₹{parseFloat(sol.price || 0).toFixed(0)}
+//       </span>
+//     );
+//   }
+//   return (
+//     <span className="absolute top-2 left-2 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-400 text-emerald-950 border border-emerald-500">
+//       Free
+//     </span>
+//   );
+// }
 
-function TypeBadge({ type }) {
-  return (
-    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#071A3D] text-white">
-      {SOLUTION_TYPE_LABELS[type] || type}
-    </span>
-  );
-}
+// function TypeBadge({ type }) {
+//   return (
+//     <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#071A3D] text-white">
+//       {SOLUTION_TYPE_LABELS[type] || type}
+//     </span>
+//   );
+// }
 
 
 // function slugify(text) {
