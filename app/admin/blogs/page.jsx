@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../src/components/ui/button";
 import {
   Table,
   TableBody,
@@ -9,8 +9,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import BlogForm from "@/admin/BlogForm";
+} from "../../../src/components/ui/table";
+import BlogForm from "../../../src/admin/BlogForm";
 
 export default function AdminBlogsPage() {
   const [blogs, setBlogs] = useState([]);
