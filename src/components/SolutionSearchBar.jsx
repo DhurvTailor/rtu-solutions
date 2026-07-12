@@ -32,9 +32,7 @@ export default function SolutionSearchBar() {
     }
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/solutions/search?q=${encodeURIComponent(searchQuery)}`
-      );
+      const res = await fetch(`/api/solutions?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       setResults(Array.isArray(data) ? data : []);
     } catch (e) {

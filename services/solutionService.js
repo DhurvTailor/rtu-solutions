@@ -134,10 +134,40 @@ export async function getSolutionById(id) {
 
 
 
-export async function searchSolutions(query) {
-  if (!query || query.trim().length < 2) return [];
+// export async function searchSolutions(query) {
+//   if (!query || query.trim().length < 2) return [];
 
-  const searchTerm = query.trim();
+//   const searchTerm = query.trim();
+
+//   const [rows] = await db.query(
+//     `
+//     SELECT
+//       solutions.id,
+//       solutions.title,
+//       solutions.description,
+//       solutions.thumbnail_blob_name,
+//       solutions.solution_type,
+//       subjects.name AS subject_name,
+//       MATCH(solutions.title, solutions.description) AGAINST (? IN NATURAL LANGUAGE MODE) AS relevance
+//     FROM solutions
+//     JOIN subjects ON solutions.subject_id = subjects.id
+//     WHERE MATCH(solutions.title, solutions.description) AGAINST (? IN NATURAL LANGUAGE MODE)
+//        OR solutions.title LIKE ?
+//     ORDER BY relevance DESC
+//     LIMIT 8
+//     `,
+//     [searchTerm, searchTerm, `%${searchTerm}%`]
+//   );
+//   return rows;
+// }
+
+
+
+export async function searchSolutions(query) {
+  if (!query || query.trim().length < 1) return [];
+
+  const term = query.trim();
+  const likeTerm = `%${term}%`;
 
   const [rows] = await db.query(
     `
@@ -147,16 +177,38 @@ export async function searchSolutions(query) {
       solutions.description,
       solutions.thumbnail_blob_name,
       solutions.solution_type,
-      subjects.name AS subject_name,
-      MATCH(solutions.title, solutions.description) AGAINST (? IN NATURAL LANGUAGE MODE) AS relevance
+      subjects.name              AS subject_name,
+      semesters.semester_number  AS semester_number,
+      branch.name                AS branch_name,
+      degrees.name               AS degree_name,
+      (
+        (CASE WHEN solutions.title       LIKE ? THEN 5 ELSE 0 END) +
+        (CASE WHEN subjects.name         LIKE ? THEN 3 ELSE 0 END) +
+        (CASE WHEN solutions.description LIKE ? THEN 2 ELSE 0 END) +
+        (CASE WHEN branch.name           LIKE ? THEN 2 ELSE 0 END) +
+        (CASE WHEN degrees.name          LIKE ? THEN 1 ELSE 0 END) +
+        (CASE WHEN solutions.solution_type LIKE ? THEN 1 ELSE 0 END)
+      ) AS relevance
     FROM solutions
-    JOIN subjects ON solutions.subject_id = subjects.id
-    WHERE MATCH(solutions.title, solutions.description) AGAINST (? IN NATURAL LANGUAGE MODE)
-       OR solutions.title LIKE ?
-    ORDER BY relevance DESC
-    LIMIT 8
+    JOIN subjects  ON solutions.subject_id = subjects.id
+    JOIN semesters ON subjects.semester_id = semesters.id
+    JOIN branch    ON semesters.branch_id  = branch.id
+    JOIN degrees   ON branch.degree_id     = degrees.id
+    WHERE
+      solutions.title         LIKE ? OR
+      solutions.description   LIKE ? OR
+      subjects.name           LIKE ? OR
+      branch.name              LIKE ? OR
+      degrees.name             LIKE ? OR
+      solutions.solution_type LIKE ? OR
+      CAST(semesters.semester_number AS CHAR) LIKE ?
+    ORDER BY relevance DESC, solutions.id DESC
+    LIMIT 10
     `,
-    [searchTerm, searchTerm, `%${searchTerm}%`]
+    [
+      likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, // relevance scoring (6)
+      likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, likeTerm, // WHERE clause (7)
+    ]
   );
   return rows;
 }
