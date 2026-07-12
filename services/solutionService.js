@@ -131,3 +131,32 @@ export async function getSolutionById(id) {
   );
   return rows[0] || null;
 }
+
+
+
+export async function searchSolutions(query) {
+  if (!query || query.trim().length < 2) return [];
+
+  const searchTerm = query.trim();
+
+  const [rows] = await db.query(
+    `
+    SELECT
+      solutions.id,
+      solutions.title,
+      solutions.description,
+      solutions.thumbnail_blob_name,
+      solutions.solution_type,
+      subjects.name AS subject_name,
+      MATCH(solutions.title, solutions.description) AGAINST (? IN NATURAL LANGUAGE MODE) AS relevance
+    FROM solutions
+    JOIN subjects ON solutions.subject_id = subjects.id
+    WHERE MATCH(solutions.title, solutions.description) AGAINST (? IN NATURAL LANGUAGE MODE)
+       OR solutions.title LIKE ?
+    ORDER BY relevance DESC
+    LIMIT 8
+    `,
+    [searchTerm, searchTerm, `%${searchTerm}%`]
+  );
+  return rows;
+}

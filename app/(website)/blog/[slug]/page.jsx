@@ -121,7 +121,7 @@ export default async function BlogDetailPage({ params }) {
           <img
             src={imageUrl}
             alt={blog.title}
-            className="w-full aspect-[16/9] object-cover rounded-xl mb-8"
+            className="w-full aspect-video object-cover rounded-xl mb-8"
           />
         )}
 

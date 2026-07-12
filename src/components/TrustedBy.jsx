@@ -19,7 +19,7 @@ const branches = [
 export default function TrustedBy() {
   return (
     <section
-      className="py-14 bg-gradient-to-br from-blue-50 via-white to-orange-50"
+      className="py-14 bg-linear-to-br from-blue-50 via-white to-orange-50"
       aria-label="Branches covered by RTU Solutions"
     >
       <div className="max-w-5xl mx-auto px-5">

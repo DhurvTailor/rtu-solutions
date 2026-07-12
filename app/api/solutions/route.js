@@ -5,8 +5,9 @@ import {
   deleteSolution,
   getSolutionsBySubject,
   getSolutionById,
-} from "@/services/solutionService";
-import { deleteBlob } from "@/lib/azureBlob";
+  searchSolutions ,
+} from "../../../services/solutionService";
+import { deleteBlob } from "../../../lib/azureBlob";
 
 // GET
 export async function GET(request) {
@@ -148,6 +149,27 @@ export async function DELETE(request) {
     );
   }
 }
+
+
+
+
+export async function GET(request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get("q");
+
+    if (!query || query.trim().length < 2) {
+      return Response.json([]);
+    }
+
+    const results = await searchSolutions(query);
+    return Response.json(results);
+  } catch (error) {
+    return Response.json({ message: error.message }, { status: 500 });
+  }
+}
+
+
 
 // import {
 //   getSolutions,

@@ -45,7 +45,7 @@ export default async function BlogListPage() {
               href={`/blog/${blog.slug}`}
               className="group border rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-card"
             >
-              <div className="aspect-[16/9] bg-muted overflow-hidden">
+              <div className="aspect-video bg-muted overflow-hidden">
                 {blog.cover_blob_name ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
