@@ -139,9 +139,54 @@ function ActionButton({ sol, isFree }) {
   );
 }
 
+// function SolutionCard({ sol, isFree }) {
+//   return (
+//     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-[#E8700A]/40 hover:shadow-sm transition-all">
+//       <div className="relative w-full bg-gray-100" style={{ aspectRatio: "16/9" }}>
+//         {sol.thumbnail_blob_name ? (
+//           <img
+//             src={`/api/thumbnail?id=${sol.id}`}
+//             alt={sol.title}
+//             className="w-full h-full object-cover"
+//             loading="lazy"
+//           />
+//         ) : (
+//           <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-2">
+//             <FiBookOpen size={30} className="text-slate-400" />
+//             <span className="text-[11px] text-slate-400 font-medium">No thumbnail</span>
+//           </div>
+//         )}
+//         {/* <StatusBadge sol={sol} isFree={isFree} />
+//         <TypeBadge type={sol.solution_type} /> */}
+//       </div>
+
+//       <div className="p-4">
+//         <h3 className="text-sm font-bold text-[#071A3D] leading-snug mb-1.5 line-clamp-2">
+//           {sol.title}
+//         </h3>
+//         {sol.description ? (
+//           <p className="text-xs text-gray-500 leading-relaxed mb-3">
+//             {truncateDesc(sol.description)}
+//           </p>
+//         ) : (
+//           <p className="text-xs text-gray-400 italic mb-3">No description added.</p>
+//         )}
+//         <div className="flex gap-2">
+//           <SeePdfButton sol={sol} />
+//           <ActionButton sol={sol} isFree={isFree} />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+
 function SolutionCard({ sol, isFree }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-[#E8700A]/40 hover:shadow-sm transition-all">
+    <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 overflow-hidden hover:border-[#E8700A]/40 hover:shadow-sm transition-all w-full">
+      {/* Thumbnail */}
       <div className="relative w-full bg-gray-100" style={{ aspectRatio: "16/9" }}>
         {sol.thumbnail_blob_name ? (
           <img
@@ -151,27 +196,36 @@ function SolutionCard({ sol, isFree }) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-2">
-            <FiBookOpen size={30} className="text-slate-400" />
-            <span className="text-[11px] text-slate-400 font-medium">No thumbnail</span>
+          <div className="w-full h-full bg-slate-100 flex flex-col items-center justify-center gap-1.5 sm:gap-2">
+            <FiBookOpen size={24} className="text-slate-400 sm:hidden" />
+            <FiBookOpen size={30} className="text-slate-400 hidden sm:block" />
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
+              No thumbnail
+            </span>
           </div>
         )}
         {/* <StatusBadge sol={sol} isFree={isFree} />
         <TypeBadge type={sol.solution_type} /> */}
       </div>
 
-      <div className="p-4">
-        <h3 className="text-sm font-bold text-[#071A3D] leading-snug mb-1.5 line-clamp-2">
+      {/* Content */}
+      <div className="p-3 sm:p-4 md:p-4">
+        <h3 className="text-[13px] sm:text-sm md:text-[15px] font-bold text-[#071A3D] leading-snug mb-1 sm:mb-1.5 line-clamp-2">
           {sol.title}
         </h3>
+
         {sol.description ? (
-          <p className="text-xs text-gray-500 leading-relaxed mb-3">
+          <p className="text-[11px] sm:text-xs leading-relaxed text-gray-500 mb-2.5 sm:mb-3 line-clamp-2 sm:line-clamp-3">
             {truncateDesc(sol.description)}
           </p>
         ) : (
-          <p className="text-xs text-gray-400 italic mb-3">No description added.</p>
+          <p className="text-[11px] sm:text-xs text-gray-400 italic mb-2.5 sm:mb-3">
+            No description added.
+          </p>
         )}
-        <div className="flex gap-2">
+
+        {/* Action buttons — chhoti screens pe stack, badi screens pe side-by-side */}
+        <div className="flex flex-col xs:flex-row sm:flex-row gap-2">
           <SeePdfButton sol={sol} />
           <ActionButton sol={sol} isFree={isFree} />
         </div>
@@ -179,6 +233,8 @@ function SolutionCard({ sol, isFree }) {
     </div>
   );
 }
+
+
 
 export default function Notes() {
   const [degrees, setDegrees] = useState([]);
