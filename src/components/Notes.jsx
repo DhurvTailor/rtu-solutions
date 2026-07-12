@@ -160,7 +160,7 @@ function SolutionCard({ sol, isFree }) {
         <TypeBadge type={sol.solution_type} />
       </div>
 
-      <div className="p-4">
+      {/* <div className="p-4">
         <h3 className="text-sm font-bold text-[#071A3D] leading-snug mb-1.5 line-clamp-2">
           {sol.title}
         </h3>
@@ -175,7 +175,7 @@ function SolutionCard({ sol, isFree }) {
           <SeePdfButton sol={sol} />
           <ActionButton sol={sol} isFree={isFree} />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
