@@ -391,11 +391,7 @@ export default function Hero() {
           </span>
         </h1>
 
-        <p className="text-gray-600 text-lg md:text-xl mt-6 max-w-2xl mx-auto leading-8">
-          Rajasthan Technical University ke students ke liye complete exam
-          preparation platform — Notes, Previous Year Papers, Important
-          Questions aur Video Lectures, sab ek jagah.
-        </p>
+  
 
         {/* NEW: RTU Sold Paper Search */}
         <div className="mt-10">

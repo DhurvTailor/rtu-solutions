@@ -77,7 +77,7 @@ export default function SolutionSearchBar() {
   }
 
   return (
-    <div ref={wrapperRef} className="relative w-full max-w-2xl mx-auto">
+    <div ref={wrapperRef} className="relative w-full max-w-3xl mx-auto">
       {/* Search input — Google-style pill */}
       <div
         className={`flex items-center gap-2 sm:gap-3 bg-white rounded-full border transition-all
@@ -95,7 +95,7 @@ export default function SolutionSearchBar() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setShowDropdown(true)}
           placeholder="Search RTU solved papers, notes, PYQs..."
-          className="flex-1 min-w-0 outline-none text-sm sm:text-base text-[#0B1F3F] placeholder:text-gray-400 bg-transparent"
+          className="flex-1 min-w-0 outline-none text-sm sm:text-base text-[#0B1F3F] placeholder:text-gray-400 p-2 bg-transparent"
         />
 
         {loading && (
