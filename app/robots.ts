@@ -11,25 +11,30 @@
 //   };
 // }
 
-
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        userAgent: "*",
-        allow: ["/", "/api/thumbnail", "/api/product-feed"],
-        disallow: ["/admin", "/api/", "/checkout", "/profile"],
-      },
-      {
         userAgent: "Googlebot",
-        allow: ["/", "/api/thumbnail", "/api/product-feed"],
-        disallow: ["/admin", "/checkout", "/profile"],
+        allow: ["/"],
+        disallow: ["/admin", "/checkout", "/profile", "/api/"],
       },
       {
         userAgent: "Googlebot-Image",
         allow: ["/", "/api/thumbnail"],
+        disallow: ["/admin", "/checkout", "/profile"],
+      },
+      {
+        userAgent: "Storebot-Google",
+        allow: ["/", "/api/thumbnail", "/api/product-feed"],
+        disallow: ["/admin", "/checkout", "/profile"],
+      },
+      {
+        userAgent: "*",
+        allow: ["/"],
+        disallow: ["/admin", "/checkout", "/profile", "/api/"],
       },
     ],
     sitemap: "https://www.rtu-solutions.me/sitemap.xml",

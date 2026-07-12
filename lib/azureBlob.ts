@@ -155,3 +155,34 @@ export const getThumbnailURL = async (blobName: string): Promise<string> => {
   });
   return sasUrl;
 };
+
+
+
+
+
+
+
+
+// ── NEW: Blob ko buffer mein download karo (proxy streaming ke liye) ──
+export const downloadBlobBuffer = async (
+  blobName: string
+): Promise<{ buffer: Buffer; contentType: string } | null> => {
+  const containerClient = getContainerClient();
+  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  const exists = await blockBlobClient.exists();
+  if (!exists) return null;
+
+  const downloadResponse = await blockBlobClient.download();
+  const chunks: Buffer[] = [];
+  const stream = downloadResponse.readableStreamBody;
+  if (!stream) return null;
+
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+
+  return {
+    buffer: Buffer.concat(chunks),
+    contentType: downloadResponse.contentType || "image/webp",
+  };
+};
