@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
-import { generateBlobName, getUploadSasUrl } from "@/lib/azureBlob";
+import { authOptions } from "../../../../lib/authOptions";
+import { generateBlobName, getUploadSasUrl } from "../../../../lib/azureBlob";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);

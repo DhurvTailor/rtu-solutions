@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getBlogBySlug, getAllPublishedSlugs } from "@/services/blogService";
+import { getBlogBySlug, getAllPublishedSlugs } from "../../../../services/blogService";
 
 export const revalidate = 3600;
 

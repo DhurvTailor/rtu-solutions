@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { authOptions } from "../../../lib/authOptions";
 import {
   getAllBlogs,
   getBlogById,
@@ -8,8 +8,8 @@ import {
   addBlog,
   updateBlog,
   deleteBlog,
-} from "@/services/blogService";
-import { deleteBlob } from "@/lib/azureBlob";
+} from "../../../services/blogService";
+import { deleteBlob } from "../../../lib/azureBlob";
 
 // GET — public: ?slug=xxx (published only) | admin: ?id=xxx or ?admin_slug=xxx or all
 export async function GET(request) {

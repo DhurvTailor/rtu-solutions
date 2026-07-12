@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { downloadBlobBuffer } from "@/lib/azureBlob";
+import { downloadBlobBuffer } from "../../../../lib/azureBlob";
 
 // Public route — koi auth nahi, kyunki cover images publicly visible honi chahiye (SEO ke liye bhi)
 export async function GET(req: NextRequest) {
