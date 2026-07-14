@@ -144,14 +144,14 @@ export default function Navbar() {
       role="banner"
     >
       <div className="max-w-7xl mx-auto px-5">
-        <div className="flex items-center justify-between h-20 gap-4">
+        <div className="flex items-center justify-between h-22 gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 shrink-0">
             <Image
-              src="/logo.jpg"
+              src="/logo.webp"
               alt="RTU Solutions Logo"
-              width={44}
-              height={44}
+              width={80}
+              height={40}
               className="rounded-full"
               priority
             />
@@ -167,7 +167,7 @@ export default function Navbar() {
 
           {/* Desktop Nav — pill style, active state */}
           <nav
-            className="hidden lg:flex items-center gap-1 bg-gray-100/80 rounded-full px-2 py-2"
+            className="hidden lg:flex items-center gap-1 bg-gray-100/40 rounded-full px-2 py-2"
             aria-label="Primary navigation"
           >
             {navLinks.map((link) => {
@@ -249,8 +249,8 @@ export default function Navbar() {
                 aria-current={isActive ? "page" : undefined}
                 className={`px-4 py-3 rounded-xl font-medium transition ${
                   isActive
-                    ? "bg-gray-100 text-[#0B1F3F]"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-[#0B1F3F]"
+                    ? "bg-gray-100 text-[#0B1F3F] "
+                    : "text-gry-800 hover:bg-gray-50 hover:text-[#0B1F3F]"
                 }`}
                 onClick={() => setMobileOpen(false)}
               >
