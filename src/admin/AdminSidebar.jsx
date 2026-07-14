@@ -18,7 +18,7 @@ import {
   FiVideo,
   FiUsers,
   FiChevronLeft,
-  Faphone,
+  FiPhone,
 } from "react-icons/fi";
 
 export default function AdminSidebar() {
@@ -69,7 +69,7 @@ export default function AdminSidebar() {
       {
       name: "Contact",
       path: "/admin/contact",
-      icon: <Faphone size={20} />,
+      icon: <FiPhone size={20} />,
     },
   ];
 
