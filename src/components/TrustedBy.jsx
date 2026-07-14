@@ -66,7 +66,7 @@ const sliderItems = [...platforms, ...platforms];
 
 export default function ConnectPlatforms() {
   return (
-    <section className="py-16 bg-gradient-to-br from-blue-50 via-white to-orange-50 overflow-hidden">
+    <section className="py-16 bg-linear-to-br from-blue-50 via-white to-orange-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-5">
 
         <div className="flex items-center gap-4 mb-10">
@@ -81,7 +81,7 @@ export default function ConnectPlatforms() {
 
         <div className="group relative">
 
-          <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused]">
+          <div className="flex w-max animate-marquee group-hover:paused">
 
             {sliderItems.map((item, index) => (
               <a
@@ -107,7 +107,7 @@ export default function ConnectPlatforms() {
                   hover:-translate-y-1
                   hover:border-orange-500
                   hover:shadow-xl
-                  min-w-[220px]
+                  min-w-55
                 "
               >
                 <div
