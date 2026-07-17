@@ -7,6 +7,7 @@ import CgpaCalculator from "../../src/components/CgpaCalculator";
 import Testimonials from "../../src/components/Testimonials";
 import StatsCounter from "../../src/components/StatsCounter";
 import Trust from "../../src/components/TrustedBy";
+import GoogleReviewSection from "../../src/components/GoogleReviewSection";
 export default function Home() {
   return (
     <main>
@@ -16,7 +17,7 @@ export default function Home() {
 
       <Youtubevideo />      
         <Testimonials />
-      
+      <GoogleReviewSection />
       <CgpaCalculator />
        <StatsCounter />
     </main>

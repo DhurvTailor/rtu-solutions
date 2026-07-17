@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Removed unknown at-rule '@custom-variant' which caused a warning. */
 
 :root {
   --background: oklch(1 0 0);
@@ -156,3 +156,42 @@ body {
 .animate-marquee {
   animation: marquee 30s linear infinite;
 }
+
+
+
+
+
+/* QR Scanner Animation */
+@keyframes scanLine {
+  0% { top: 8px; }
+  50% { top: calc(100% - 8px); }
+  100% { top: 8px; }
+}
+
+@keyframes cornerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.scan-line {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #4285F4, #60a5fa, #4285F4, transparent);
+  border-radius: 2px;
+  animation: scanLine 2.2s ease-in-out infinite;
+  box-shadow: 0 0 8px 2px rgba(66,133,244,0.5);
+}
+
+.corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  animation: cornerPulse 2.2s ease-in-out infinite;
+}
+
+.corner-tl { top: 10px; left: 10px; border-top: 3px solid #4285F4; border-left: 3px solid #4285F4; border-radius: 4px 0 0 0; }
+.corner-tr { top: 10px; right: 10px; border-top: 3px solid #4285F4; border-right: 3px solid #4285F4; border-radius: 0 4px 0 0; }
+.corner-bl { bottom: 10px; left: 10px; border-bottom: 3px solid #4285F4; border-left: 3px solid #4285F4; border-radius: 0 0 0 4px; }
+.corner-br { bottom: 10px; right: 10px; border-bottom: 3px solid #4285F4; border-right: 3px solid #4285F4; border-radius: 0 0 4px 0; }

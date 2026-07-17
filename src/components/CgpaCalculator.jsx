@@ -1,538 +1,507 @@
+
+
 "use client";
-import { useState, useCallback } from "react";
-import {
-  RTU_SUBJECTS,
-  RTU_GRADING,
-  BRANCHES,
-  getGradeFromMarks,
-  calculateSGPA,
-  calculateCGPA,
-} from "../data/rtuSubjects";
+import { useState, useMemo } from "react";
 
-// ─── Small helper components ──────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// RTU Official CGPA → Percentage Conversion (RTUDAT-2019)
+// Formula: Percentage = (CGPA × 10) − 7.5
+// Reference: Office of PG/PhD Admissions, RTU Kota
+// ─────────────────────────────────────────────────────────────
 
-function GradeBadge({ grade }) {
-  if (!grade) return <span className="text-gray-400 text-sm">—</span>;
-  const colors = {
-    O:  "bg-purple-100 text-purple-800 border border-purple-300",
-    "A+": "bg-green-100 text-green-800 border border-green-300",
-    A:  "bg-blue-100 text-blue-800 border border-blue-300",
-    "B+": "bg-teal-100 text-teal-800 border border-teal-300",
-    B:  "bg-yellow-100 text-yellow-800 border border-yellow-300",
-    C:  "bg-orange-100 text-orange-800 border border-orange-300",
-    F:  "bg-red-100 text-red-800 border border-red-300",
+const CONVERSION_TABLE = [
+  { cgpa: 6.25, percentage: 55 },
+  { cgpa: 6.75, percentage: 60 },
+  { cgpa: 7.25, percentage: 65 },
+  { cgpa: 7.75, percentage: 70 },
+  { cgpa: 8.25, percentage: 75 },
+];
+
+function cgpaToPercentage(cgpa) {
+  return parseFloat((cgpa * 10 - 7.5).toFixed(2));
+}
+
+function calculateWeightedCGPA(semesters) {
+  let totalPoints = 0;
+  let totalCredits = 0;
+  semesters.forEach((s) => {
+    const sgpa = parseFloat(s.sgpa);
+    const credits = parseFloat(s.credits);
+    if (!isNaN(sgpa) && !isNaN(credits) && credits > 0 && sgpa >= 0 && sgpa <= 10) {
+      totalPoints += sgpa * credits;
+      totalCredits += credits;
+    }
+  });
+  if (totalCredits === 0) return 0;
+  return parseFloat((totalPoints / totalCredits).toFixed(2));
+}
+
+// Standard division cut-offs based on aggregate percentage.
+// Per RTU norm: "minimum 60% aggregate = equivalent to First Division"
+// when a class/division isn't directly awarded by the grading system.
+function getDivision(percentage) {
+  if (percentage >= 75) return { label: "First Division with Distinction", tier: "distinction" };
+  if (percentage >= 60) return { label: "First Division", tier: "first" };
+  if (percentage >= 50) return { label: "Second Division", tier: "second" };
+  if (percentage >= 40) return { label: "Third Division", tier: "third" };
+  return { label: "Not Passing", tier: "fail" };
+}
+
+// Safe integer parse helper — never returns NaN
+function safeInt(val, fallback, min, max) {
+  const n = parseInt(val, 10);
+  if (isNaN(n)) return fallback;
+  console.log("safeInt:", val, "->", n, `(min=${min}, max=${max})`);
+  return Math.min(max, Math.max(min, n));
+}
+
+// ─────────────────────────────────────────────────────────────
+// Icons (inline SVG, no emoji, no external icon library needed)
+// ─────────────────────────────────────────────────────────────
+
+function IconSeal({ className = "w-8 h-8" }) {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" className={className}>
+      <circle cx="24" cy="20" r="14" stroke="currentColor" strokeWidth="2" />
+      <path d="M24 12l2.47 5.01 5.53.8-4 3.9.94 5.5L24 24.6l-4.94 2.6.94-5.5-4-3.9 5.53-.8L24 12z"
+        fill="currentColor" />
+      <path d="M17 31l-2.5 9L20 37l4 4 4-4 5.5 3-2.5-9" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconChevronRight({ className = "w-5 h-5" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconEdit({ className = "w-4 h-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M12 20h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconRefresh({ className = "w-4 h-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M21 12a9 9 0 11-3-6.7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M21 3v6h-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconPrint({ className = "w-4 h-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M6 9V3h12v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="4" y="9" width="16" height="8" rx="1" stroke="currentColor" strokeWidth="2" />
+      <path d="M6 17v4h12v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconCheck({ className = "w-4 h-4" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Step 1 — How many semesters
+// ─────────────────────────────────────────────────────────────
+
+function StepCount({ onSelect }) {
+  const [count, setCount] = useState("8");
+
+  const handleContinue = () => {
+    const n = safeInt(count, 8, 1, 12);
+    onSelect(n);
+    console.log("Selected semesters:", n);
   };
-  return (
-    <span className={`px-2 py-0.5 rounded text-xs font-bold ${colors[grade.grade] || ""}`}>
-      {grade.grade}
-    </span>
-  );
-}
-
-function CgpaBar({ value }) {
-  const pct = Math.min((value / 10) * 100, 100);
-  const color =
-    value >= 8.5 ? "bg-purple-500" :
-    value >= 7.5 ? "bg-green-500" :
-    value >= 6.5 ? "bg-blue-500" :
-    value >= 5.5 ? "bg-yellow-500" : "bg-red-500";
 
   return (
-    <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-      <div
-        className={`${color} h-3 rounded-full transition-all duration-700`}
-        style={{ width: `${pct}%` }}
-      />
-    </div>
-  );
-}
-
-function getDivision(cgpa) {
-  if (cgpa >= 8.5) return { label: "First Division with Distinction", color: "text-purple-700" };
-  if (cgpa >= 6.5) return { label: "First Division", color: "text-green-700" };
-  if (cgpa >= 5.0) return { label: "Second Division", color: "text-yellow-700" };
-  if (cgpa >= 4.5) return { label: "Third Division", color: "text-orange-700" };
-  return { label: "Fail", color: "text-red-700" };
-}
-
-// ─── Step 1: Branch Select ────────────────────────────────────────────────────
-
-function StepBranch({ onSelect }) {
-  return (
-    <div className="max-w-xl mx-auto text-center">
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">Select Your Branch</h2>
-      <p className="text-gray-500 mb-8 text-sm">RTU Kota — B.Tech (8 Semesters)</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        {BRANCHES.map((b) => {
-          const icons = { CSE: "💻", ECE: "📡", ME: "⚙️", CE: "🏗️", EE: "⚡" };
-          const full = {
-            CSE: "Computer Science",
-            ECE: "Electronics & Comm",
-            ME: "Mechanical",
-            CE: "Civil",
-            EE: "Electrical",
-          };
-          return (
-            <button
-              key={b}
-              onClick={() => onSelect(b)}
-              className="flex flex-col items-center gap-2 p-5 rounded-2xl border-2 border-gray-200
-                         hover:border-blue-500 hover:bg-blue-50 transition-all group"
-            >
-              <span className="text-3xl">{icons[b]}</span>
-              <span className="font-bold text-gray-800 group-hover:text-blue-700">{b}</span>
-              <span className="text-xs text-gray-400 group-hover:text-blue-500">{full[b]}</span>
-            </button>
-          );
-        })}
+    <div className="max-w-md mx-auto text-center">
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0b2545] text-amber-400 mb-5">
+        <IconSeal className="w-9 h-9" />
       </div>
-    </div>
-  );
-}
-
-// ─── Step 2: Semester Select ──────────────────────────────────────────────────
-
-function StepSemesters({ branch, onSelect }) {
-  const [chosen, setChosen] = useState([]);
-
-  const toggle = (s) =>
-    setChosen((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s].sort((a, b) => a - b)
-    );
-
-  const selectAll = () => setChosen([1, 2, 3, 4, 5, 6, 7, 8]);
-  const clearAll  = () => setChosen([]);
-
-  return (
-    <div className="max-w-lg mx-auto text-center">
-      <h2 className="text-2xl font-bold text-gray-800 mb-1">
-        Select Semesters — {branch}
-      </h2>
-      <p className="text-gray-500 text-sm mb-6">
-        Jo semesters complete ho gaye hain unhe select karo
+      <h2 className="text-2xl font-bold text-slate-800 mb-1">CGPA Calculator</h2>
+      <p className="text-sm text-slate-500 mb-8">
+        Rajasthan Technical University — Official Conversion Formula (RTUDAT-2019)
       </p>
 
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-          <button
-            key={s}
-            onClick={() => toggle(s)}
-            className={`py-4 rounded-xl font-bold text-lg border-2 transition-all
-              ${chosen.includes(s)
-                ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                : "bg-white text-gray-600 border-gray-200 hover:border-blue-400"
-              }`}
-          >
-            Sem {s}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex gap-2 justify-center mb-6">
-        <button onClick={selectAll}
-          className="text-xs px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600">
-          Select All 8
-        </button>
-        <button onClick={clearAll}
-          className="text-xs px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600">
-          Clear
-        </button>
-      </div>
+      <label className="block text-sm font-semibold text-slate-600 mb-2 text-left">
+        Kitne semester ka result dena hai?
+      </label>
+      <input
+        type="number"
+        min={1}
+        max={12}
+        value={count}
+        onChange={(e) => setCount(e.target.value)}
+        className="w-full text-center text-lg font-semibold border-2 border-slate-200 rounded-xl px-4 py-3
+                   focus:outline-none focus:border-[#0b2545] focus:ring-2 focus:ring-slate-200"
+      />
 
       <button
-        disabled={chosen.length === 0}
-        onClick={() => onSelect(chosen)}
-        className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold text-lg
-                   hover:bg-blue-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+        type="button"
+        onClick={handleContinue}
+        className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl
+                   bg-[#0b2545] text-white font-semibold hover:bg-[#123a68] transition-colors
+                   active:scale-[0.99]"
       >
-        Continue →  {chosen.length > 0 && `(${chosen.length} sem selected)`}
+        Continue <IconChevronRight />
       </button>
     </div>
   );
 }
 
-// ─── Step 3: Marks Entry ──────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Step 2 — Enter SGPA (with optional custom credits)
+// ─────────────────────────────────────────────────────────────
 
-function SemesterCard({ sem, branch, marks, onChange }) {
-  const subjects = RTU_SUBJECTS[branch]?.[sem] || [];
-
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
-      {/* Header */}
-      <div className="bg-linear-to-r from-blue-600 to-blue-700 px-5 py-3 flex items-center justify-between">
-        <h3 className="text-white font-bold text-lg">Semester {sem}</h3>
-        <span className="text-blue-200 text-sm">
-          {subjects.reduce((s, sub) => s + sub.credits, 0)} credits
-        </span>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              <th className="text-left px-4 py-2 text-gray-500 font-medium">Subject</th>
-              <th className="text-center px-3 py-2 text-gray-500 font-medium w-16">Credits</th>
-              <th className="text-center px-3 py-2 text-gray-500 font-medium w-28">Marks (0-100)</th>
-              <th className="text-center px-3 py-2 text-gray-500 font-medium w-16">Grade</th>
-              <th className="text-center px-3 py-2 text-gray-500 font-medium w-16">Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            {subjects.map((sub, idx) => {
-              const m = marks[idx] ?? "";
-              const grade = getGradeFromMarks(m);
-              return (
-                <tr key={idx} className={`border-b border-gray-50 ${grade?.grade === "F" ? "bg-red-50" : ""}`}>
-                  <td className="px-4 py-2 text-gray-700">{sub.name}</td>
-                  <td className="px-3 py-2 text-center text-gray-500">{sub.credits}</td>
-                  <td className="px-3 py-2 text-center">
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={m}
-                      onChange={(e) => onChange(idx, e.target.value)}
-                      placeholder="—"
-                      className={`w-20 text-center border rounded-lg px-2 py-1 text-sm
-                        focus:outline-none focus:ring-2 focus:ring-blue-400
-                        ${grade?.grade === "F"
-                          ? "border-red-300 bg-red-50 text-red-700"
-                          : "border-gray-200"
-                        }`}
-                    />
-                  </td>
-                  <td className="px-3 py-2 text-center">
-                    <GradeBadge grade={grade} />
-                  </td>
-                  <td className="px-3 py-2 text-center font-semibold text-gray-700">
-                    {grade ? grade.gradePoints : "—"}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+function StepSgpa({ totalSemesters, onCalculate, onBack }) {
+  const [rows, setRows] = useState(
+    Array.from({ length: totalSemesters }, (_, i) => ({
+      sem: i + 1,
+      sgpa: "",
+      credits: 20,
+    }))
   );
-}
+  const [advanced, setAdvanced] = useState(false);
 
-function StepMarks({ branch, semesters, onCalculate }) {
-  // marksData[sem][subjectIndex] = marks string
-  const [marksData, setMarksData] = useState(() => {
-    const init = {};
-    semesters.forEach((s) => (init[s] = {}));
-    return init;
-  });
-
-  const handleChange = useCallback((sem, idx, val) => {
-    setMarksData((prev) => ({
-      ...prev,
-      [sem]: { ...prev[sem], [idx]: val },
-    }));
-  }, []);
-
-  const handleCalculate = () => {
-    // Build results
-    const results = semesters.map((sem) => {
-      const subjects = (RTU_SUBJECTS[branch]?.[sem] || []).map((sub, idx) => ({
-        ...sub,
-        marks: marksData[sem][idx] ?? "",
-      }));
-      const { sgpa, totalCredits, hasBacklog } = calculateSGPA(subjects);
-      return { sem, sgpa, totalCredits, hasBacklog, subjects };
+  const update = (idx, field, value) => {
+    setRows((prev) => {
+      const copy = [...prev];
+      copy[idx] = { ...copy[idx], [field]: value };
+      return copy;
     });
-    onCalculate(results);
   };
 
-  // Check if at least all entered marks are filled
-  const filledCount = semesters.reduce((acc, sem) => {
-    const subjLen = RTU_SUBJECTS[branch]?.[sem]?.length || 0;
-    const filled = Object.values(marksData[sem] || {}).filter((v) => v !== "").length;
-    return acc + (filled === subjLen ? 1 : 0);
-  }, 0);
+  const filledCount = rows.filter(
+    (r) => r.sgpa !== "" && !isNaN(parseFloat(r.sgpa))
+  ).length;
+
+  const allValid = rows.every((r) => {
+    const v = parseFloat(r.sgpa);
+    return r.sgpa !== "" && !isNaN(v) && v >= 0 && v <= 10;
+  });
+
+  const handleCalculate = () => {
+    if (!allValid) return;
+    onCalculate(rows);
+  };
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">Enter Your Marks</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {branch} | Semester{semesters.length > 1 ? "s" : ""}: {semesters.join(", ")}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">
-            {filledCount}/{semesters.length} sem complete
-          </span>
-          <button
-            onClick={handleCalculate}
-            className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-xl
-                       hover:bg-green-700 transition-all shadow-sm"
-          >
-            Calculate CGPA →
-          </button>
-        </div>
+    <div className="max-w-xl mx-auto">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-slate-800">Enter SGPA</h2>
+        <p className="text-sm text-slate-500 mt-1">
+          Har semester ka SGPA daalo (0.00 – 10.00)
+        </p>
       </div>
 
-      {/* Grading legend */}
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-6 flex flex-wrap gap-2">
-        <span className="text-xs text-blue-600 font-medium mr-1">RTU Grading:</span>
-        {RTU_GRADING.map((g) => (
-          <span key={g.grade} className="text-xs text-gray-600">
-            <strong>{g.grade}</strong> ({g.minMarks}–{g.maxMarks}) = {g.gradePoints}pts
-            {g !== RTU_GRADING[RTU_GRADING.length - 1] && " •"}
-          </span>
-        ))}
-      </div>
-
-      {semesters.map((sem) => (
-        <SemesterCard
-          key={sem}
-          sem={sem}
-          branch={branch}
-          marks={marksData[sem] || {}}
-          onChange={(idx, val) => handleChange(sem, idx, val)}
-        />
-      ))}
-
-      <div className="text-center mt-4 mb-8">
-        <button
-          onClick={handleCalculate}
-          className="px-10 py-3 bg-green-600 text-white font-bold text-lg rounded-xl
-                     hover:bg-green-700 transition-all shadow-md"
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+        {/* Table Header */}
+        <div
+          className={`grid bg-slate-50 border-b border-slate-100 px-4 py-2 text-xs font-semibold text-slate-500
+            ${advanced ? "grid-cols-12" : "grid-cols-9"}`}
         >
-          🎯 Calculate My CGPA
+          <div className="col-span-5">Semester</div>
+          <div className="col-span-4">SGPA</div>
+          {advanced && <div className="col-span-3">Credits</div>}
+        </div>
+
+        {/* Rows */}
+        {rows.map((r, idx) => {
+          const v = parseFloat(r.sgpa);
+          const isInvalid = r.sgpa !== "" && (isNaN(v) || v < 0 || v > 10);
+
+          return (
+            <div
+              key={r.sem}
+              className={`grid items-center px-4 py-2.5 border-b border-slate-50 last:border-0
+                ${advanced ? "grid-cols-12" : "grid-cols-9"}`}
+            >
+              {/* Semester label */}
+              <div className="col-span-5 text-sm font-medium text-slate-700">
+                Semester {r.sem}
+              </div>
+
+              {/* SGPA input */}
+              <div className="col-span-4">
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.01"
+                  placeholder="e.g. 7.8"
+                  value={r.sgpa}
+                  onChange={(e) => update(idx, "sgpa", e.target.value)}
+                  className={`w-24 border rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-200 transition-colors
+                    ${isInvalid
+                      ? "border-red-300 bg-red-50 text-red-700"
+                      : "border-slate-200"
+                    }`}
+                />
+              </div>
+
+              {/* Credits input — only in advanced mode */}
+              {advanced && (
+                <div className="col-span-3">
+                  <input
+                    type="number"
+                    min="1"
+                    max="30"
+                    value={r.credits}
+                    onChange={(e) => update(idx, "credits", e.target.value)}
+                    className="w-20 border border-slate-200 rounded-lg px-2 py-1.5 text-sm
+                               focus:outline-none focus:ring-2 focus:ring-slate-200"
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Advanced toggle */}
+      <button
+        type="button"
+        onClick={() => setAdvanced((a) => !a)}
+        className="text-xs font-medium text-[#0b2545] underline underline-offset-2 mb-6 block"
+      >
+        {advanced
+          ? "Hide credit customisation"
+          : "Semesters mein credits alag-alag hain? (advanced)"}
+      </button>
+
+      {/* Action buttons */}
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+        >
+          Back
+        </button>
+        <button
+          type="button"
+          disabled={!allValid}
+          onClick={handleCalculate}
+          className="flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0b2545] text-white font-semibold
+                     hover:bg-[#123a68] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Calculate CGPA <IconChevronRight />
         </button>
       </div>
+
+      {/* Progress */}
+      <p className="text-center text-xs text-slate-400 mt-3">
+        {filledCount}/{rows.length} semester filled
+      </p>
     </div>
   );
 }
 
-// ─── Step 4: Result ───────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Step 3 — Official Result
+// ─────────────────────────────────────────────────────────────
 
-function StepResult({ branch, results, onReset, onRecalculate }) {
-  const cgpa = calculateCGPA(results.map((r) => ({ sgpa: r.sgpa, totalCredits: r.totalCredits })));
-  const totalCredits = results.reduce((s, r) => s + r.totalCredits, 0);
-  const totalBacklogs = results.filter((r) => r.hasBacklog).length;
-  const division = getDivision(cgpa);
-  const [expandedSem, setExpandedSem] = useState(null);
+function StepResult({ rows, onReset, onRecalculate }) {
+  const cgpa = useMemo(() => calculateWeightedCGPA(rows), [rows]);
+  const percentage = useMemo(() => cgpaToPercentage(cgpa), [cgpa]);
+  const division = getDivision(percentage);
+
+  const tierColor = {
+    distinction: "text-purple-700 bg-purple-50 border-purple-200",
+    first: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    second: "text-amber-700 bg-amber-50 border-amber-200",
+    third: "text-orange-700 bg-orange-50 border-orange-200",
+    fail: "text-red-700 bg-red-50 border-red-200",
+  }[division.tier];
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* CGPA Hero Card */}
-      <div className="bg-linear-to-br from-blue-600 to-purple-700 rounded-3xl p-8 text-white text-center mb-6 shadow-xl">
-        <p className="text-blue-200 text-sm mb-1">{branch} — B.Tech RTU Kota</p>
-        <div className="text-7xl font-black mb-1">{cgpa}</div>
-        <div className="text-blue-200 text-lg mb-3">CGPA / 10.0</div>
-        <CgpaBar value={cgpa} />
-        <div className={`mt-4 text-lg font-semibold ${division.color.replace("text-", "text-white opacity-")}`}>
-          🎓 {division.label}
+      {/* Certificate-style result card */}
+      <div className="bg-white border-2 border-[#0b2545]/15 rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div className="bg-[#0b2545] px-6 py-5 flex items-center gap-3">
+          <IconSeal className="w-8 h-8 text-amber-400" />
+          <div>
+            <p className="text-white font-semibold leading-tight">Rajasthan Technical University</p>
+            <p className="text-slate-300 text-xs">Result Statement — CGPA Summary</p>
+          </div>
         </div>
-        <div className="flex justify-center gap-8 mt-5 text-sm">
-          <div>
-            <div className="text-2xl font-bold">{results.length}</div>
-            <div className="text-blue-200">Semesters</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold">{totalCredits}</div>
-            <div className="text-blue-200">Total Credits</div>
-          </div>
-          <div>
-            <div className={`text-2xl font-bold ${totalBacklogs > 0 ? "text-red-300" : "text-green-300"}`}>
-              {totalBacklogs}
+
+        <div className="p-8 text-center">
+          <p className="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-1">
+            Cumulative Grade Point Average
+          </p>
+          <div className="text-6xl font-black text-[#0b2545] mb-1">{cgpa.toFixed(2)}</div>
+          <div className="text-slate-400 text-sm mb-6">out of 10.00</div>
+
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="border border-slate-200 rounded-xl py-4">
+              <p className="text-xs text-slate-400 font-medium mb-1">Equivalent Percentage</p>
+              <p className="text-2xl font-bold text-slate-800">{percentage}%</p>
             </div>
-            <div className="text-blue-200">Backlogs</div>
+            <div className={`border rounded-xl py-4 ${tierColor}`}>
+              <p className="text-xs font-medium mb-1 opacity-70">Division</p>
+              <p className="text-base font-bold leading-tight px-2">{division.label}</p>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-left">
+            <p className="text-xs font-semibold text-slate-500 mb-1">Official Conversion Formula (RTUDAT-2019)</p>
+            <p className="text-sm text-slate-700 font-mono">
+              Percentage = (CGPA × 10) − 7.5 = ({cgpa.toFixed(2)} × 10) − 7.5 = <strong>{percentage}%</strong>
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Per-Semester Breakdown */}
-      <h3 className="font-bold text-gray-700 mb-3 text-lg">Semester-wise Breakdown</h3>
-      <div className="space-y-3 mb-6">
-        {results.map((r) => (
-          <div key={r.sem} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-            <button
-              onClick={() => setExpandedSem(expandedSem === r.sem ? null : r.sem)}
-              className="w-full flex items-center justify-between px-5 py-3 hover:bg-gray-50"
-            >
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-gray-700">Semester {r.sem}</span>
-                {r.hasBacklog && (
-                  <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">
-                    Backlog ⚠️
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <div className="font-black text-blue-700 text-xl">{r.sgpa}</div>
-                  <div className="text-xs text-gray-400">SGPA ({r.totalCredits} cr)</div>
-                </div>
-                <span className="text-gray-400">{expandedSem === r.sem ? "▲" : "▼"}</span>
-              </div>
-            </button>
-
-            {expandedSem === r.sem && (
-              <div className="border-t border-gray-100 px-5 pb-4 pt-2">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-gray-400 text-xs">
-                      <th className="text-left py-1">Subject</th>
-                      <th className="text-center py-1">Cr</th>
-                      <th className="text-center py-1">Marks</th>
-                      <th className="text-center py-1">Grade</th>
-                      <th className="text-center py-1">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {r.subjects.map((sub, i) => {
-                      const grade = getGradeFromMarks(sub.marks);
-                      return (
-                        <tr key={i} className={`border-t border-gray-50 ${grade?.grade === "F" ? "bg-red-50" : ""}`}>
-                          <td className="py-1.5 text-gray-600 text-xs">{sub.name}</td>
-                          <td className="text-center text-gray-500 text-xs">{sub.credits}</td>
-                          <td className="text-center font-medium">{sub.marks || "—"}</td>
-                          <td className="text-center"><GradeBadge grade={grade} /></td>
-                          <td className="text-center font-semibold text-gray-700">
-                            {grade ? grade.gradePoints : "—"}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Grade Distribution */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 shadow-sm">
-        <h3 className="font-bold text-gray-700 mb-3">Grade Distribution</h3>
-        <div className="flex flex-wrap gap-2">
-          {RTU_GRADING.map((g) => {
-            const count = results.flatMap((r) => r.subjects).filter((sub) => {
-              const grade = getGradeFromMarks(sub.marks);
-              return grade?.grade === g.grade;
-            }).length;
-            if (count === 0) return null;
-            return (
-              <div key={g.grade}
-                className="flex flex-col items-center bg-gray-50 rounded-xl px-4 py-2 border border-gray-100">
-                <span className="text-lg font-black text-gray-700">{count}</span>
-                <GradeBadge grade={g} />
-                <span className="text-xs text-gray-400 mt-0.5">{g.label}</span>
-              </div>
-            );
-          })}
+      {/* Semester-wise SGPA used */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+        <h3 className="font-bold text-slate-700 mb-3 text-sm">Semester-wise SGPA Used</h3>
+        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+          {rows.map((r) => (
+            <div key={r.sem} className="text-center bg-slate-50 rounded-lg py-2 border border-slate-100">
+              <p className="text-xs text-slate-400">Sem {r.sem}</p>
+              <p className="font-bold text-slate-700 text-sm">{r.sgpa}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Reference conversion table */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+        <h3 className="font-bold text-slate-700 mb-3 text-sm flex items-center gap-2">
+          <IconCheck className="w-4 h-4 text-slate-400" />
+          RTU Sample Conversion Reference
+        </h3>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-slate-400 text-xs">
+              <th className="text-left py-1">Grade Point</th>
+              <th className="text-right py-1">Equivalent Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {CONVERSION_TABLE.map((row) => (
+              <tr key={row.cgpa} className="border-t border-slate-50">
+                <td className="py-1.5 text-slate-600">{row.cgpa.toFixed(2)}</td>
+                <td className="py-1.5 text-right font-semibold text-slate-700">{row.percentage}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="text-xs text-slate-400 mt-2">
+          Note: Division cut-offs (First ≥60%, Second ≥50%, Third ≥40%) follow standard
+          university convention. RTU norm states a minimum of 60% aggregate is treated as
+          equivalent to First Division where a division is not directly awarded.
+        </p>
+      </div>
+
+      {/* Actions */}
       <div className="flex gap-3 flex-wrap">
         <button
+          type="button"
           onClick={onRecalculate}
-          className="flex-1 py-3 rounded-xl border-2 border-blue-500 text-blue-600
-                     font-semibold hover:bg-blue-50 transition-all"
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-[#0b2545]
+                     text-[#0b2545] font-semibold hover:bg-slate-50 transition-colors"
         >
-          ✏️ Edit Marks
+          <IconEdit /> Edit SGPA
         </button>
         <button
+          type="button"
           onClick={onReset}
-          className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-600
-                     font-semibold hover:bg-gray-200 transition-all"
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-100 text-slate-600
+                     font-semibold hover:bg-slate-200 transition-colors"
         >
-          🔄 Start Over
+          <IconRefresh /> Start Over
         </button>
         <button
+          type="button"
           onClick={() => window.print()}
-          className="flex-1 py-3 rounded-xl bg-blue-600 text-white
-                     font-semibold hover:bg-blue-700 transition-all"
+          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0b2545] text-white
+                     font-semibold hover:bg-[#123a68] transition-colors"
         >
-          🖨️ Print / Save
+          <IconPrint /> Print / Save
         </button>
       </div>
     </div>
   );
 }
 
-// ─── Main Calculator Component ────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// Main
+// ─────────────────────────────────────────────────────────────
 
 export default function CgpaCalculator() {
-  const [step, setStep]       = useState(1); // 1=branch, 2=sems, 3=marks, 4=result
-  const [branch, setBranch]   = useState(null);
-  const [semesters, setSemesters] = useState([]);
-  const [results, setResults] = useState([]);
+  const [step, setStep] = useState(1); // 1=count, 2=sgpa entry, 3=result
+  const [totalSemesters, setTotalSemesters] = useState(8);
+  const [finalRows, setFinalRows] = useState([]);
 
   const reset = () => {
     setStep(1);
-    setBranch(null);
-    setSemesters([]);
-    setResults([]);
+    setTotalSemesters(8);
+    setFinalRows([]);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <div className="max-w-3xl mx-auto px-4 py-10">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700
-                          text-sm font-medium px-4 py-1.5 rounded-full mb-4">
-            🎓 RTU Kota — Official Grading System
-          </div>
-          <h1 className="text-4xl font-black text-gray-900 mb-2">CGPA Calculator</h1>
-          <p className="text-gray-500">
-            B.Tech | Rajasthan Technical University | All Branches
-          </p>
-        </div>
-
-        {/* Progress Steps */}
+        {/* Progress */}
         <div className="flex items-center justify-center gap-2 mb-10">
-          {["Branch", "Semesters", "Marks", "Result"].map((label, i) => {
+          {["Semesters", "SGPA", "Result"].map((label, i) => {
             const num = i + 1;
-            const active  = step === num;
-            const done    = step > num;
+            const active = step === num;
+            const done = step > num;
             return (
               <div key={label} className="flex items-center gap-2">
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all
-                  ${active ? "bg-blue-600 text-white" :
-                    done   ? "bg-green-100 text-green-700" :
-                             "bg-gray-100 text-gray-400"}`}>
-                  <span>{done ? "✓" : num}</span>
+                <div
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-colors
+                  ${active ? "bg-[#0b2545] text-white" : done ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-400"}`}
+                >
+                  {done ? <IconCheck className="w-3.5 h-3.5" /> : <span>{num}</span>}
                   <span className="hidden sm:inline">{label}</span>
                 </div>
-                {i < 3 && <div className={`h-px w-6 ${done ? "bg-green-400" : "bg-gray-200"}`} />}
+                {i < 2 && <div className={`h-px w-6 ${done ? "bg-emerald-300" : "bg-slate-200"}`} />}
               </div>
             );
           })}
         </div>
 
-        {/* Steps */}
         {step === 1 && (
-          <StepBranch onSelect={(b) => { setBranch(b); setStep(2); }} />
+          <StepCount
+            onSelect={(n) => {
+              setTotalSemesters(n);
+              setStep(2);
+            }}
+          />
         )}
         {step === 2 && (
-          <StepSemesters
-            branch={branch}
-            onSelect={(sems) => { setSemesters(sems); setStep(3); }}
+          <StepSgpa
+            totalSemesters={totalSemesters}
+            onBack={() => setStep(1)}
+            onCalculate={(rows) => {
+              setFinalRows(rows);
+              setStep(3);
+            }}
           />
         )}
         {step === 3 && (
-          <StepMarks
-            branch={branch}
-            semesters={semesters}
-            onCalculate={(res) => { setResults(res); setStep(4); }}
-          />
-        )}
-        {step === 4 && (
           <StepResult
-            branch={branch}
-            results={results}
+            rows={finalRows}
             onReset={reset}
-            onRecalculate={() => setStep(3)}
+            onRecalculate={() => setStep(2)}
           />
         )}
       </div>
