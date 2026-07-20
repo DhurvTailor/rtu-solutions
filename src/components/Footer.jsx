@@ -104,7 +104,19 @@ export default function Footer() {
                   Terms & Conditions
                 </Link>
               </li>
+                 <li>
+                <Link href="/advertisement" className="hover:text-orange-400 transition">
+                  Advertise With Us
+                </Link>
+              </li>
 
+                <li>
+                <Link href="/faq" className="hover:text-orange-400 transition">
+                  FAQ
+                </Link>
+              </li> 
+                
+              
             </ul>
           </div>
 

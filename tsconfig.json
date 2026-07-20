@@ -35,7 +35,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "app/(website)/privacy-policy/page.jsx", "app/(website)/terms/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]
