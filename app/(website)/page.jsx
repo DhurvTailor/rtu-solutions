@@ -8,6 +8,7 @@ import Testimonials from "../../src/components/Testimonials";
 import StatsCounter from "../../src/components/StatsCounter";
 import Trust from "../../src/components/TrustedBy";
 import GoogleReviewSection from "../../src/components/GoogleReviewSection";
+import Pageslider from "../../src/components/Pageslider";
 export default function Home() {
   return (
     <main>
@@ -19,6 +20,7 @@ export default function Home() {
         <Testimonials />
       <GoogleReviewSection />
       <CgpaCalculator />
+<Pageslider />
        <StatsCounter />
     </main>
   );

@@ -296,7 +296,7 @@ function StepSgpa({ totalSemesters, onCalculate, onBack }) {
           type="button"
           disabled={!allValid}
           onClick={handleCalculate}
-          className="flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0b2545] text-white font-semibold
+          className="flex-2 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#0b2545] text-white font-semibold
                      hover:bg-[#123a68] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Calculate CGPA <IconChevronRight />
