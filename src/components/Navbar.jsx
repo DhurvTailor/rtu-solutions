@@ -140,7 +140,7 @@ export default function Navbar() {
 
   return (
     <header
-      className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100"
+      className="sticky top-0  z-50 bg-white/90 backdrop-blur-md border-b border-gray-100"
       role="banner"
     >
       <div className="max-w-7xl mx-auto px-5">

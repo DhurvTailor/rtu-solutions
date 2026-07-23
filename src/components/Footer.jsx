@@ -12,7 +12,7 @@ import {
 export default function Footer() {
   return (
     <footer
-      className="relative mt-10 overflow-hidden text-white"
+      className="relative mt-5 overflow-hidden text-white"
       style={{
         backgroundImage: "url('/footer.webp')",
         backgroundSize: "cover",

@@ -24,7 +24,7 @@ export default function GoogleReviewSection() {
     <div className="relative rounded-xl overflow-hidden border border-blue-100">
       
       <Image
-        src="/google-review-qr.png"
+        src="/google-review-qr.webp"
         alt="RTU Solutions Google Review QR"
         width={280}
         height={280}

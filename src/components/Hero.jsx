@@ -54,9 +54,9 @@ export default function Hero() {
       <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-orange-200/40 blur-3xl" />
 
-      <div className="relative max-w-5xl mx-auto px-5 py-20 md:py-28 text-center">
+      <div className="relative max-w-5xl mx-auto px-5 py-10 md:py-28 text-center">
         <span className="inline-block bg-white border border-orange-500/30 text-orange-500 px-4 py-2 rounded-full text-sm font-medium mb-6 shadow-sm">
-          🎓 Your Success, Our Mission
+           Your Success, Our Mission
         </span>
 
         <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-[#0B1F3F] leading-[1.1] tracking-tight">

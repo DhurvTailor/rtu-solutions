@@ -60,7 +60,9 @@ export default function RootLayout({
       className={cn(geistSans.variable, geistMono.variable, "font-sans", figtree.variable)}
     >
       <head>
-        <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+        <script src="https://checkout.razorpay.com/v1/checkout.js" async></script> 
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4312176557759808"
+     crossOrigin="anonymous"></script>
       </head>
       <body className="bg-white text-black flex flex-col min-h-screen">
         <AuthProvider>{children}</AuthProvider>
