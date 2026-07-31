@@ -116,7 +116,7 @@ export default function SolutionSearchBar() {
         <div className="hidden sm:block h-6 w-px bg-gray-200 shrink-0" />
 
         <span className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full shrink-0">
-          RTU Sold Paper
+          RTU Old Paper
         </span>
       </div>
 

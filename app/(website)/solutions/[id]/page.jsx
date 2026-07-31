@@ -89,7 +89,7 @@ export default async function SolutionPage({ params }) {
     name: solution.title,
     description: solution.description || solution.title,
     image: solution.thumbnail_blob_name
-      ? `https://www.rtu-solutions.me/api/thumbnail?id=${solution.id}`
+      ? `https://www.rtu-solutions.me/api/thumbnail?id=${solution.id}`     
       : "https://www.rtu-solutions.me/logo.jpg",
     brand: { "@type": "Brand", name: "RTU Solutions" },
     offers: {

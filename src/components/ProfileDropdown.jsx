@@ -419,7 +419,7 @@ export default function ProfileDropdown() {
           />
           <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 border-2 border-[#071A3D] rounded-full" />
         </div>
-        <span className="text-white text-sm font-medium hidden md:block max-w-24 truncate">
+        <span className="text-orange-400 text-sm font-medium hidden md:block max-w-24 truncate">
           {session.user?.name?.split(" ")[0]}
         </span>
         <FaChevronDown
@@ -475,7 +475,7 @@ export default function ProfileDropdown() {
                 </div>
                 <div>
                   <p className="text-white text-sm font-medium">{item.label}</p>
-                  <p className="text-gray-500 text-xs">{item.desc}</p>
+                  {/* <p className="text-gray-500 text-xs">{item.desc}</p> */}
                 </div>
               </Link>
             ))}
