@@ -1,4 +1,78 @@
-export default function Loading() {
+"use client";
+
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { usePathname } from "next/navigation";
+
+type LoadingContextValue = { loading: boolean };
+
+const LoadingContext = createContext<LoadingContextValue>({ loading: false });
+
+export function useRouteLoading() {
+  return useContext(LoadingContext);
+}
+
+export default function RouteLoadingProvider({ children }: { children: ReactNode }) {
+  const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstRender = useRef(true);
+
+  // Naya pathname aate hi loader band kar do
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setLoading(false);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  }, [pathname]);
+
+  // Har internal <a> click par loader on kar do
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest("a");
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href");
+      if (!href) return;
+      if (href.startsWith("#")) return;
+      if (anchor.target === "_blank") return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // new-tab shortcuts
+
+      let url: URL;
+      try {
+        url = new URL(href, window.location.href);
+      } catch {
+        return;
+      }
+
+      // Sirf same-origin internal links par loader dikhao
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname === pathname) return; // same page pe hi hai
+
+      setLoading(true);
+
+      // Safety fallback — agar kisi wajah se navigation fail/slow ho,
+      // to loader hamesha ke liye atka na rahe
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setLoading(false), 4000);
+    }
+
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [pathname]);
+
+  return (
+    <LoadingContext.Provider value={{ loading }}>
+      {loading && <RouteLoaderOverlay />}
+      {children}
+    </LoadingContext.Provider>
+  );
+}
+
+// ── Same design jo already tumhare app/loading.jsx mein hai ──
+function RouteLoaderOverlay() {
   return (
     <>
       <style>{`

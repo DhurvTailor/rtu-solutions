@@ -132,14 +132,10 @@ function StepCount({ onSelect }) {
       <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0b2545] text-amber-400 mb-5">
         <IconSeal className="w-9 h-9" />
       </div>
-      <h2 className="text-2xl font-bold text-slate-800 mb-1">CGPA Calculator</h2>
+      <h1 className="text-2xl font-bold text-slate-800 mb-1">CGPA Calculator</h1>
       <p className="text-sm text-slate-500 mb-8">
         Rajasthan Technical University — Official Conversion Formula (RTUDAT-2019)
       </p>
-
-      <label className="block text-sm font-semibold text-slate-600 mb-2 text-left">
-        Kitne semester ka result dena hai?
-      </label>
       <input
         type="number"
         min={1}
@@ -456,7 +452,7 @@ export default function CgpaCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className=" bg-slate-50">
       <div className="max-w-3xl mx-auto px-4 py-10">
         {/* Progress */}
         <div className="flex items-center justify-center gap-2 mb-10">

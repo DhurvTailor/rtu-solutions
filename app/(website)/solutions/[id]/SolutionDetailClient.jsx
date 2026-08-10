@@ -1,8 +1,9 @@
+
 // "use client";
 
 // import { useState } from "react";
 // import { FiLock, FiDownload, FiFileText, FiShare2, FiCopy, FiCheck } from "react-icons/fi";
-// import { FaWhatsapp } from "react-icons/fa";
+// import { FaWhatsapp, FaYoutube } from "react-icons/fa";
 // import toast from "react-hot-toast";
 
 // function slugify(text) {
@@ -150,6 +151,18 @@
 //                 <FiDownload size={15} /> Download Free
 //               </a>
 //             )}
+
+//             {/* ── NEW: Watch Free Video button, only shown when a YouTube link exists ── */}
+//             {solution.youtube_url && (
+//               <a
+//                 href={solution.youtube_url}
+//                 target="_blank"
+//                 rel="noopener noreferrer"
+//                 className="mt-3 w-full inline-flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 py-3 rounded-xl font-semibold transition"
+//               >
+//                 <FaYoutube size={16} /> Watch Free Video
+//               </a>
+//             )}
 //           </div>
 //         </div>
 //       </div>
@@ -163,9 +176,10 @@
 "use client";
 
 import { useState } from "react";
-import { FiLock, FiDownload, FiFileText, FiShare2, FiCopy, FiCheck } from "react-icons/fi";
+import { FiLock, FiDownload, FiFileText, FiShare2, FiCopy, FiCheck, FiInfo } from "react-icons/fi";
 import { FaWhatsapp, FaYoutube } from "react-icons/fa";
 import toast from "react-hot-toast";
+
 
 function slugify(text) {
   return text
@@ -222,11 +236,21 @@ export default function SolutionDetailClient({ solution }) {
         {/* PDF preview */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 overflow-hidden">
           {solution.preview_blob_name ? (
-            <iframe
-              src={`/api/preview?id=${solution.id}`}
-              className="w-full h-150"
-              title="PDF preview"
-            />
+            <>
+              <iframe
+                src={`/api/preview?id=${solution.id}`}
+                className="w-full h-150"
+                title="PDF preview"
+              />
+              {/* Disclaimer */}
+              <div className="flex items-start gap-2 px-4 py-3 bg-amber-50 border-t border-amber-100">
+                <FiInfo size={14} className="text-amber-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-700 leading-snug">
+                  यहाँ PDF के सिर्फ <span className="font-semibold">2 sample pages</span> दिखाए गए हैं — content और quality verify करने के लिए।
+                  पूरी PDF खरीदने के बाद उपलब्ध होगी।
+                </p>
+              </div>
+            </>
           ) : (
             <div className="h-100 flex flex-col items-center justify-center text-gray-400">
               <FiFileText size={28} className="mb-2" />
@@ -313,7 +337,6 @@ export default function SolutionDetailClient({ solution }) {
               </a>
             )}
 
-            {/* ── NEW: Watch Free Video button, only shown when a YouTube link exists ── */}
             {solution.youtube_url && (
               <a
                 href={solution.youtube_url}

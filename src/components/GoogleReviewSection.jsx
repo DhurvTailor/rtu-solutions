@@ -6,7 +6,7 @@ import { FaGoogle, FaStar, FaCheckCircle } from "react-icons/fa";
 
 export default function GoogleReviewSection() {
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-blue-50">
+    <section className="py-16 bg-linear-to-b from-white to-blue-50">
       <div className="max-w-7xl mx-auto px-6"> 
           <h2 className="mt-5 text-center text-2xl md:text-5xl font-extrabold text-gray-900 leading-tight">
     Rate RTU Solutions on Google 
@@ -56,7 +56,7 @@ export default function GoogleReviewSection() {
 
   {/* Header */}
   <div className="flex items-start gap-4 mb-5">
-    <div className="bg-[#E8F0FE] border border-[#c5d8fd] w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0">
+    <div className="bg-[#E8F0FE] border border-[#c5d8fd] w-12 h-12 rounded-full flex items-center justify-center shrink-0">
       <FaGoogle className="text-[#4285F4] text-xl" />
     </div>
     <div>
@@ -100,7 +100,7 @@ export default function GoogleReviewSection() {
         key={item}
         className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-2.5"
       >
-        <div className="bg-green-100 rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0">
+        <div className="bg-green-100 rounded-full w-7 h-7 flex items-center justify-center shrink-0">
           <FaCheckCircle className="text-green-600 text-sm" />
         </div>
         <span className="text-sm text-gray-800 font-medium">{item}</span>

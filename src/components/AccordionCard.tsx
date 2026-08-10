@@ -44,7 +44,7 @@ export default function AccordionCard({
         className="w-full flex items-center gap-4 px-5 sm:px-6 py-5 text-left"
       >
         <span
-          className={`w-11 h-11 shrink-0 rounded-xl bg-gradient-to-br ${accent} flex items-center justify-center text-white shadow-md`}
+          className={`w-11 h-11 shrink-0 rounded-xl bg-linear-to-br ${accent} flex items-center justify-center text-white shadow-md`}
         >
           <Icon className="w-5 h-5" strokeWidth={2} />
         </span>
@@ -88,7 +88,7 @@ export default function AccordionCard({
 
             {image && (
               <div className={imagePosition === "left" ? "md:order-1" : ""}>
-                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-100">
+                <div className="relative aspect-4/3 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-100">
                   {/* Dhruv: apni image is path pe public/ folder mein daal do */}
                   <Image
                     src={image.src}

@@ -1,0 +1,13 @@
+# /public/llms.txt
+
+# RTU Solutions
+> Free and premium study material for Rajasthan Technical University students.
+
+## About
+RTU Solutions provides RTU Notes, PYQ Solutions, Important Questions and Video Lectures for all engineering branches and semesters.
+
+## Content
+- RTU Notes: Branch and semester wise notes
+- PYQ Solutions: Previous year question paper solutions
+- Important Questions: Exam-focused question banks
+- Video Lectures: YouTube video explanations

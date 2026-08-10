@@ -1,4 +1,4 @@
-    "use client";
+ 
 
 import Hero from "../../src/components/Hero";
 import Youtubevideo from "../../src/components/Youtubevideo";
