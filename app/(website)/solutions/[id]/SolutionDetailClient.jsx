@@ -355,7 +355,6 @@
 // }
 
 
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -367,8 +366,6 @@ import {
   FiCopy,
   FiCheck,
   FiInfo,
-  FiChevronLeft,
-  FiChevronRight,
 } from "react-icons/fi";
 import { FaWhatsapp, FaYoutube } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -379,11 +376,15 @@ import DOMPurify from "dompurify";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+/*
+ * PDF.js worker
+ *
+ * CDN worker use kiya gaya hai taaki Next.js deployment ke
+ * production build mein worker bundle karne ki problem na aaye.
+ */
+pdfjs.GlobalWorkerOptions.workerSrc =
+  `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
 
 function slugify(text) {
   if (!text) return "";
@@ -395,6 +396,7 @@ function slugify(text) {
     .trim()
     .toLowerCase();
 }
+
 
 export default function SolutionDetailClient({ solution }) {
   const [copied, setCopied] = useState(false);
@@ -414,8 +416,8 @@ export default function SolutionDetailClient({ solution }) {
     `https://www.rtu-solutions.me/solutions/` +
     `${solution.id}-${slugify(solution.title)}`;
 
-  const previewUrl =
-    `/api/preview?id=${solution.id}`;
+  const previewUrl = `/api/preview?id=${solution.id}`;
+
 
   /*
    * Responsive PDF width
@@ -444,6 +446,7 @@ export default function SolutionDetailClient({ solution }) {
     };
   }, []);
 
+
   /*
    * Copy link
    */
@@ -463,6 +466,7 @@ export default function SolutionDetailClient({ solution }) {
     }
   };
 
+
   /*
    * Native share
    */
@@ -475,12 +479,13 @@ export default function SolutionDetailClient({ solution }) {
           url: shareUrl,
         });
       } catch {
-        // User cancelled share
+        // User ne share cancel kiya
       }
     } else {
       setShareOpen((value) => !value);
     }
   };
+
 
   /*
    * WhatsApp share
@@ -497,33 +502,32 @@ export default function SolutionDetailClient({ solution }) {
     );
   };
 
+
   /*
-   * PDF loaded
+   * PDF successfully loaded
    */
   const handlePdfLoadSuccess = ({ numPages }) => {
+    // Sirf first 2 pages preview mein dikhayenge
     setNumPages(Math.min(numPages, 2));
+
     setPdfLoading(false);
     setPdfError(false);
   };
 
+
   /*
-   * PDF error
+   * PDF loading error
    */
-  const handlePdfLoadError = () => {
+  const handlePdfLoadError = (error) => {
+    console.error("PDF preview error:", error);
+
     setPdfLoading(false);
     setPdfError(true);
   };
 
+
   /*
-   * Safe HTML description
-   *
-   * Admin description can contain:
-   * <h3>
-   * <p>
-   * <ul>
-   * <li>
-   * <strong>
-   * <br>
+   * Sanitize description HTML
    */
   const safeDescription = solution.description
     ? DOMPurify.sanitize(solution.description, {
@@ -533,11 +537,14 @@ export default function SolutionDetailClient({ solution }) {
       })
     : "";
 
+
   return (
     <main className="min-h-screen bg-gray-50 py-5 sm:py-8 lg:py-10 px-3 sm:px-5 lg:px-6">
+
       <div className="max-w-6xl mx-auto">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-7">
+
 
           {/* =====================================================
               PDF PREVIEW
@@ -547,10 +554,12 @@ export default function SolutionDetailClient({ solution }) {
 
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
 
-              {/* Preview header */}
+              {/* Preview Header */}
+
               <div className="flex items-center justify-between px-4 sm:px-5 py-3 border-b border-gray-100">
 
                 <div className="flex items-center gap-2 min-w-0">
+
                   <FiFileText
                     size={17}
                     className="text-[#E8700A] shrink-0"
@@ -559,16 +568,24 @@ export default function SolutionDetailClient({ solution }) {
                   <span className="text-sm font-semibold text-[#071A3D] truncate">
                     Preview
                   </span>
+
                 </div>
+
 
                 {numPages > 0 && (
                   <span className="text-xs text-gray-400 shrink-0">
-                    {numPages} sample {numPages === 1 ? "page" : "pages"}
+                    {numPages} sample{" "}
+                    {numPages === 1 ? "page" : "pages"}
                   </span>
                 )}
+
               </div>
 
-              {/* PDF area */}
+
+              {/* =================================================
+                  PDF AREA
+              ================================================== */}
+
               <div
                 ref={previewRef}
                 className="w-full bg-gray-100 p-2 sm:p-4"
@@ -578,7 +595,11 @@ export default function SolutionDetailClient({ solution }) {
 
                   <div className="w-full">
 
+
+                    {/* Loading */}
+
                     {pdfLoading && (
+
                       <div className="min-h-[300px] flex flex-col items-center justify-center text-gray-400">
 
                         <div className="w-8 h-8 border-2 border-gray-300 border-t-[#E8700A] rounded-full animate-spin mb-3" />
@@ -588,9 +609,14 @@ export default function SolutionDetailClient({ solution }) {
                         </p>
 
                       </div>
+
                     )}
 
+
+                    {/* Error */}
+
                     {pdfError && (
+
                       <div className="min-h-[300px] flex flex-col items-center justify-center text-gray-400">
 
                         <FiFileText
@@ -603,9 +629,14 @@ export default function SolutionDetailClient({ solution }) {
                         </p>
 
                       </div>
+
                     )}
 
+
+                    {/* PDF */}
+
                     {!pdfError && (
+
                       <Document
                         file={previewUrl}
                         onLoadSuccess={handlePdfLoadSuccess}
@@ -616,6 +647,7 @@ export default function SolutionDetailClient({ solution }) {
                         {Array.from(
                           { length: numPages },
                           (_, index) => (
+
                             <div
                               key={index}
                               className="w-full flex justify-center mb-3 last:mb-0"
@@ -637,9 +669,11 @@ export default function SolutionDetailClient({ solution }) {
                                   renderAnnotationLayer={false}
                                   loading={
                                     <div className="w-full min-h-[300px] flex items-center justify-center text-gray-400">
+
                                       <span className="text-sm">
                                         Loading page...
                                       </span>
+
                                     </div>
                                   }
                                 />
@@ -647,10 +681,12 @@ export default function SolutionDetailClient({ solution }) {
                               </div>
 
                             </div>
+
                           )
                         )}
 
                       </Document>
+
                     )}
 
                   </div>
@@ -674,8 +710,13 @@ export default function SolutionDetailClient({ solution }) {
 
               </div>
 
-              {/* Disclaimer */}
+
+              {/* =================================================
+                  DISCLAIMER
+              ================================================== */}
+
               {solution.preview_blob_name && (
+
                 <div className="flex items-start gap-2 px-4 py-3 bg-amber-50 border-t border-amber-100">
 
                   <FiInfo
@@ -684,20 +725,27 @@ export default function SolutionDetailClient({ solution }) {
                   />
 
                   <p className="text-xs text-amber-700 leading-relaxed">
+
                     PDF ke sirf{" "}
+
                     <span className="font-semibold">
                       2 sample pages
                     </span>{" "}
+
                     preview ke liye dikhaye gaye hain.
                     Complete file purchase ke baad available hogi.
+
                   </p>
 
                 </div>
+
               )}
 
             </div>
 
           </section>
+
+
 
           {/* =====================================================
               DETAILS / BUY
@@ -707,14 +755,22 @@ export default function SolutionDetailClient({ solution }) {
 
             <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-5 lg:p-6 shadow-sm lg:sticky lg:top-6">
 
-              {/* Title + Share */}
+
+              {/* =================================================
+                  TITLE + SHARE
+              ================================================== */}
+
               <div className="flex items-start justify-between gap-3">
 
                 <h1 className="text-lg sm:text-xl font-bold leading-snug text-[#071A3D] break-words">
+
                   {solution.title}
+
                 </h1>
 
-                {/* Share */}
+
+                {/* Share Button */}
+
                 <div className="relative shrink-0">
 
                   <button
@@ -723,13 +779,19 @@ export default function SolutionDetailClient({ solution }) {
                     aria-label="Share solution"
                     className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition"
                   >
+
                     <FiShare2
                       size={15}
                       className="text-gray-500"
                     />
+
                   </button>
 
+
+                  {/* Share Dropdown */}
+
                   {shareOpen && (
+
                     <div className="absolute right-0 top-11 w-52 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden">
 
                       <button
@@ -740,6 +802,7 @@ export default function SolutionDetailClient({ solution }) {
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-sm text-gray-700"
                       >
+
                         {copied ? (
                           <FiCheck
                             size={15}
@@ -750,7 +813,9 @@ export default function SolutionDetailClient({ solution }) {
                         )}
 
                         {copied ? "Copied!" : "Copy link"}
+
                       </button>
+
 
                       <button
                         type="button"
@@ -760,49 +825,58 @@ export default function SolutionDetailClient({ solution }) {
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-sm text-gray-700 border-t border-gray-100"
                       >
+
                         <FaWhatsapp
                           size={15}
                           className="text-green-500"
                         />
 
                         Share on WhatsApp
+
                       </button>
 
                     </div>
+
                   )}
 
                 </div>
 
               </div>
 
-              {/* Subject */}
+
+              {/* =================================================
+                  SUBJECT
+              ================================================== */}
+
               {solution.subject_name && (
+
                 <p className="text-sm text-gray-400 mt-1">
                   {solution.subject_name}
                 </p>
+
               )}
+
 
               {/* =================================================
                   DESCRIPTION
               ================================================== */}
 
               {safeDescription && (
+
                 <div
-                  className="
-                    solution-description
-                    mt-4
-                    text-sm
-                    text-gray-600
-                    leading-6
-                    break-words
-                  "
+                  className="solution-description mt-4 text-sm text-gray-600 leading-6 break-words"
                   dangerouslySetInnerHTML={{
                     __html: safeDescription,
                   }}
                 />
+
               )}
 
-              {/* Copy URL */}
+
+              {/* =================================================
+                  COPY URL
+              ================================================== */}
+
               <button
                 type="button"
                 onClick={handleCopyLink}
@@ -813,19 +887,25 @@ export default function SolutionDetailClient({ solution }) {
                   {shareUrl}
                 </span>
 
+
                 {copied ? (
+
                   <FiCheck
                     size={14}
                     className="text-green-500 shrink-0"
                   />
+
                 ) : (
+
                   <FiCopy
                     size={14}
                     className="shrink-0"
                   />
+
                 )}
 
               </button>
+
 
               {/* =================================================
                   BUY / DOWNLOAD
@@ -841,12 +921,16 @@ export default function SolutionDetailClient({ solution }) {
                       ₹{price.toFixed(0)}
                     </p>
 
+
                     <a
                       href={`/checkout?solution_id=${solution.id}`}
                       className="w-full inline-flex items-center justify-center gap-2 bg-[#071A3D] hover:bg-[#0d2a5e] active:bg-[#05132c] text-white py-3 rounded-xl font-semibold transition"
                     >
+
                       <FiLock size={15} />
+
                       Buy & Download
+
                     </a>
 
                   </>
@@ -857,23 +941,33 @@ export default function SolutionDetailClient({ solution }) {
                     href={`/api/download?id=${solution.id}`}
                     className="w-full inline-flex items-center justify-center gap-2 bg-[#E8700A] hover:bg-[#cf6209] active:bg-[#b95507] text-white py-3 rounded-xl font-semibold transition"
                   >
+
                     <FiDownload size={15} />
+
                     Download Free
+
                   </a>
 
                 )}
 
+
                 {/* YouTube */}
+
                 {solution.youtube_url && (
+
                   <a
                     href={solution.youtube_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-3 w-full inline-flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 border border-red-100 text-red-600 py-3 rounded-xl font-semibold transition"
                   >
+
                     <FaYoutube size={16} />
+
                     Watch Free Video
+
                   </a>
+
                 )}
 
               </div>
@@ -886,6 +980,8 @@ export default function SolutionDetailClient({ solution }) {
 
       </div>
 
+
+
       {/* =========================================================
           DESCRIPTION STYLES
       ========================================================== */}
@@ -896,70 +992,108 @@ export default function SolutionDetailClient({ solution }) {
         .solution-description h2,
         .solution-description h3,
         .solution-description h4 {
+
           color: #071A3D;
+
           font-weight: 700;
+
           line-height: 1.35;
+
           margin-top: 1rem;
+
           margin-bottom: 0.5rem;
+
         }
+
 
         .solution-description h3 {
           font-size: 1rem;
         }
 
+
         .solution-description h4 {
           font-size: 0.95rem;
         }
+
 
         .solution-description p {
           margin: 0.5rem 0;
         }
 
+
         .solution-description ul {
+
           list-style-type: disc;
+
           padding-left: 1.25rem;
+
           margin: 0.6rem 0;
+
         }
 
+
         .solution-description ol {
+
           list-style-type: decimal;
+
           padding-left: 1.25rem;
+
           margin: 0.6rem 0;
+
         }
+
 
         .solution-description li {
           margin: 0.25rem 0;
         }
 
+
         .solution-description strong {
+
           color: #071A3D;
+
           font-weight: 600;
+
         }
 
+
         .solution-description a {
+
           color: #E8700A;
+
           text-decoration: underline;
+
           overflow-wrap: anywhere;
+
         }
+
 
         .solution-description br {
           line-height: 1.5;
         }
 
+
         @media (max-width: 640px) {
 
           .solution-description {
+
             font-size: 13px;
+
             line-height: 1.55;
+
           }
 
+
           .solution-description h3 {
+
             font-size: 15px;
+
           }
 
         }
 
       `}</style>
+
     </main>
   );
 }
