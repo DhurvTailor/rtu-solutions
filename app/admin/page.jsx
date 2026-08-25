@@ -88,17 +88,20 @@
 
 
 
+
+
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   FaRupeeSign, FaShoppingCart, FaUsers,
-  FaFilePdf, FaDownload, FaGift,
-  FaArrowUp, FaChartBar,
+  FaFilePdf, FaDownload, FaArrowUp, FaChartBar,
+  FaFileWord, FaExclamationTriangle,
 } from "react-icons/fa";
 import {
   FiBookOpen, FiGitBranch, FiLayers,
   FiBook, FiFileText, FiTrendingUp,
+  FiGlobe, FiMapPin, FiBriefcase, FiClipboard,
 } from "react-icons/fi";
 
 // ── Mini bar chart component ──
@@ -150,6 +153,14 @@ export default function AdminPage() {
     { title: "Users", icon: <FaUsers size={18} />, count: stats?.users, link: "/admin/users", color: "pink" },
   ];
 
+  const reportCards = [
+    { title: "Universities", icon: <FiGlobe size={18} />, link: "/admin/universities", color: "blue" },
+    { title: "Colleges", icon: <FiMapPin size={18} />, link: "/admin/colleges", color: "purple" },
+    { title: "Training Companies", icon: <FiBriefcase size={18} />, link: "/admin/training-companies", color: "teal" },
+    { title: "Report Templates", icon: <FiClipboard size={18} />, count: stats?.reportTemplates, link: "/admin/report-templates", color: "green" },
+    { title: "Student Reports", icon: <FaFileWord size={18} />, count: stats?.studentReports, link: "/admin/student-reports", color: "orange" },
+  ];
+
   const colorMap = {
     blue: "bg-blue-50 text-blue-600 border-blue-100",
     purple: "bg-purple-50 text-purple-600 border-purple-100",
@@ -175,7 +186,7 @@ export default function AdminPage() {
             label: "Total Revenue",
             value: `₹${Number(stats?.totalRevenue || 0).toFixed(0)}`,
             icon: <FaRupeeSign size={16} />,
-            sub: `${stats?.totalSales || 0} paid orders`,
+            sub: `${stats?.totalSales || 0} paid orders (PDF + Reports)`,
             color: "bg-orange-500",
           },
           {
@@ -213,6 +224,55 @@ export default function AdminPage() {
         ))}
       </div>
 
+      {/* Report Maker Stats Row */}
+      <div>
+        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3">Report Maker</p>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div className="w-9 h-9 bg-[#0B1F3F] rounded-xl flex items-center justify-center text-white mb-3">
+              <FaFileWord size={16} />
+            </div>
+            <p className="text-2xl font-bold text-[#142647]">
+              {loading ? "—" : `₹${Number(stats?.reportRevenue || 0).toFixed(0)}`}
+            </p>
+            <p className="text-xs font-semibold text-gray-500 mt-0.5">Report Revenue</p>
+            <p className="text-[11px] text-gray-400 mt-1">{stats?.reportSales || 0} paid reports</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div className="w-9 h-9 bg-teal-500 rounded-xl flex items-center justify-center text-white mb-3">
+              <FiClipboard size={16} />
+            </div>
+            <p className="text-2xl font-bold text-[#142647]">
+              {loading ? "—" : stats?.studentReports || 0}
+            </p>
+            <p className="text-xs font-semibold text-gray-500 mt-0.5">Total Submissions</p>
+            <p className="text-[11px] text-gray-400 mt-1">Sabhi students ke reports</p>
+          </div>
+
+          <Link href="/admin/student-reports" className="group">
+            <div className={`bg-white rounded-2xl border p-5 shadow-sm h-full transition-all ${
+              stats?.failedGenerations > 0
+                ? "border-red-200 hover:border-red-300"
+                : "border-gray-100 hover:border-orange-200"
+            }`}>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white mb-3 ${
+                stats?.failedGenerations > 0 ? "bg-red-500" : "bg-gray-300"
+              }`}>
+                <FaExclamationTriangle size={14} />
+              </div>
+              <p className={`text-2xl font-bold ${stats?.failedGenerations > 0 ? "text-red-600" : "text-[#142647]"}`}>
+                {loading ? "—" : stats?.failedGenerations || 0}
+              </p>
+              <p className="text-xs font-semibold text-gray-500 mt-0.5">Failed Generations</p>
+              <p className="text-[11px] text-orange-500 mt-1 font-medium group-hover:underline">
+                Retry karne ke liye click karo →
+              </p>
+            </div>
+          </Link>
+        </div>
+      </div>
+
       {/* Weekly Chart + Top PDFs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
@@ -220,7 +280,7 @@ export default function AdminPage() {
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <FiTrendingUp className="text-orange-500" size={16} />
-            <p className="font-bold text-[#142647] text-sm">Last 7 Days Revenue</p>
+            <p className="font-bold text-[#142647] text-sm">Last 7 Days Revenue (PDF + Reports)</p>
           </div>
           {loading ? (
             <div className="h-16 bg-gray-50 rounded-xl animate-pulse" />
@@ -315,6 +375,29 @@ export default function AdminPage() {
                 </div>
                 <p className="text-xl font-bold text-[#142647]">
                   {loading ? "—" : (card.count ?? 0)}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5 font-medium">{card.title}</p>
+                <p className="text-[10px] text-orange-500 mt-2 font-semibold group-hover:underline">
+                  Manage →
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Report Maker Management Cards */}
+      <div>
+        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Report Maker Management</p>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+          {reportCards.map((card) => (
+            <Link key={card.title} href={card.link} className="group">
+              <div className="bg-white rounded-2xl p-4 border border-gray-100 hover:border-orange-300 hover:shadow-md transition-all text-center">
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center mx-auto mb-3 ${colorMap[card.color]}`}>
+                  {card.icon}
+                </div>
+                <p className="text-xl font-bold text-[#142647]">
+                  {loading ? "—" : (card.count ?? "—")}
                 </p>
                 <p className="text-xs text-gray-500 mt-0.5 font-medium">{card.title}</p>
                 <p className="text-[10px] text-orange-500 mt-2 font-semibold group-hover:underline">
