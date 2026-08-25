@@ -600,7 +600,7 @@ export default function SolutionDetailClient({ solution }) {
 
                     {pdfLoading && (
 
-                      <div className="min-h-[300px] flex flex-col items-center justify-center text-gray-400">
+                      <div className="min-h-75 flex flex-col items-center justify-center text-gray-400">
 
                         <div className="w-8 h-8 border-2 border-gray-300 border-t-[#E8700A] rounded-full animate-spin mb-3" />
 
@@ -617,7 +617,7 @@ export default function SolutionDetailClient({ solution }) {
 
                     {pdfError && (
 
-                      <div className="min-h-[300px] flex flex-col items-center justify-center text-gray-400">
+                      <div className="min-h-75 flex flex-col items-center justify-center text-gray-400">
 
                         <FiFileText
                           size={32}
@@ -668,7 +668,7 @@ export default function SolutionDetailClient({ solution }) {
                                   renderTextLayer={false}
                                   renderAnnotationLayer={false}
                                   loading={
-                                    <div className="w-full min-h-[300px] flex items-center justify-center text-gray-400">
+                                    <div className="w-full min-h-75 flex items-center justify-center text-gray-400">
 
                                       <span className="text-sm">
                                         Loading page...
@@ -693,7 +693,7 @@ export default function SolutionDetailClient({ solution }) {
 
                 ) : (
 
-                  <div className="min-h-[300px] flex flex-col items-center justify-center text-gray-400">
+                  <div className="min-h-75 flex flex-col items-center justify-center text-gray-400">
 
                     <FiFileText
                       size={30}
@@ -762,7 +762,7 @@ export default function SolutionDetailClient({ solution }) {
 
               <div className="flex items-start justify-between gap-3">
 
-                <h1 className="text-lg sm:text-xl font-bold leading-snug text-[#071A3D] break-words">
+                <h1 className="text-lg sm:text-xl font-bold leading-snug text-[#071A3D] wrap-break-word">
 
                   {solution.title}
 
@@ -864,7 +864,7 @@ export default function SolutionDetailClient({ solution }) {
               {safeDescription && (
 
                 <div
-                  className="solution-description mt-4 text-sm text-gray-600 leading-6 break-words"
+                  className="solution-description mt-4 text-sm text-gray-600 leading-6 wrap-break-word"
                   dangerouslySetInnerHTML={{
                     __html: safeDescription,
                   }}

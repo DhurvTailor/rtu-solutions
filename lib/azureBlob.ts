@@ -186,3 +186,24 @@ export const downloadBlobBuffer = async (
     contentType: downloadResponse.contentType || "image/webp",
   };
 };
+
+
+
+
+
+
+
+
+// Generic buffer upload — docx, images, kisi bhi content type ke liye
+export const uploadBufferToAzure = async (
+  fileBuffer: Buffer,
+  blobName: string,
+  contentType: string
+): Promise<string> => {
+  const containerClient = getContainerClient();
+  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+  await blockBlobClient.uploadData(fileBuffer, {
+    blobHTTPHeaders: { blobContentType: contentType },
+  });
+  return blobName;
+};
